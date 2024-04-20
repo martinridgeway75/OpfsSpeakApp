@@ -1,58 +1,11 @@
 /*(c) 2019 Martin Ridgeway <martin@ridgeway.io> MIT license*/
 /*A very special thanks to Anna Otterstad and Lee Gaskell - who generously gave their time to help test and improve the app*/
 
-import firebaseConfig from "./firebase-config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"; //"./firebase-app.js";
-import { getAuth, setPersistence, signInWithPopup, GoogleAuthProvider, signInWithCredential, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; //"./firebase-auth.js";
-import { getDatabase, ref, onValue, child, push, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"; //"./firebase-database.js";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
 const signInBtn = document.getElementById("leSignout");
 let appEditor = {};
 
-function onAuthChanged(user) {
-    if (user) {
-        signInBtn.textContent =" SIGN OUT";
-        splashScreen(false, "");
-        initApp();
-    } else {
-        signInBtn.textContent =" SIGN IN";
-        splashScreen(true, "");
-    }
-    signInBtn.disabled = false;
-}
-
 //DB COMS
 
-function signUserIn() {
-    const provdr = new GoogleAuthProvider();
-
-    signInWithPopup(auth, provdr).then( (result) => {
-        if (!result) { return; };
-
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-
-        signInWithCredential(auth, credential).catch((error) => {
-            chkPermission(error);
-        });
-    }).catch(function (error) {
-      chkPermission(error);
-  });
-}
-function toggleSignIn() {
-    if (!auth.currentUser) {
-      setPersistence(auth, browserSessionPersistence).then(() => {
-        signUserIn();
-      }).catch(function (error) {
-        chkPermission(error);
-      });
-    } else {
-      signOut(auth);
-    }
-    signInBtn.disabled = true;
-}
 function initApp() {
     const path = "basicInfo/" + auth.currentUser.uid; 
 
@@ -5502,29 +5455,7 @@ function resetAppEditor(pNym, ctx) {
         }
     };
 }
-function doKeyDown(e) {    
-    if (e.repeat) { return false; }
-    appEditor[e.key.toLowerCase()] = true;
-    handshake();
-}
-function doKeyUp(e) {
-    appEditor[e.key.toLowerCase()] = false;
-}
-function handshake() {
-    if (appEditor.shift && appEditor.p && appEditor.e) {
-        preInit();
-    }
-}
-function stopHandshake() {
-    document.removeEventListener("keydown", doKeyDown, false);
-    document.removeEventListener("keyup", doKeyUp, false);
-}
-function waitForHandshake() {
-    document.addEventListener("keydown", doKeyDown, false);
-    document.addEventListener("keyup", doKeyUp, false);
-}
+
 function chkPermission(e) { //NOTE: a string error is returned now...
     splashScreen(true, "PERMISSION DENIED @DATABASE");
 }
-waitForHandshake();
-onAuthStateChanged(auth, onAuthChanged);
