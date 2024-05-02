@@ -1,34 +1,25 @@
-onmessage = function(e) {
 
-    //write to the subdir (create file) and update the idx file 
-    
+//from main thread:
+//  data = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" } //files in records and rubrics subDir.s
+//  or
+//  data = { obj: {}, fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
 
+onmessage = (e) => {
+    const data = e.data;
 
-
-
-    write2ToOpfs(e.data, "assessments").then( () => {
-        postMessage(e.data);
-    });
+    if (data?.subDir) {
+        writeToFileInSubDir(data.subDir);
+    }
+    writeToFile(data.obj, data.fileName);
 }
 
-//for 'puts' to records and rubrics
-async function write2ToOpfs(obj, idxFileUid, dirName) {
-    const str = JSON.stringify(obj);
-    const textEncoder = new TextEncoder();
-    const content = textEncoder.encode(str);
+async function writeToFileInSubDir(subDir) {
+//  subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }
 
+    const content = prepFileContent(subDir.obj);
     const opfsRoot = await navigator.storage.getDirectory();
-
-    const idxFileHandle = await opfsRoot.getFileHandle(idxFileUid, {create: true}); //TODO: don't allow create here, need a startup check .exists()
-    const idxAccessHandle = await idxFileHandle.createSyncAccessHandle();
-
-    idxAccessHandle.truncate(0);
-    idxAccessHandle.write(content, {at: 0});
-    idxAccessHandle.flush();
-    idxAccessHandle.close();
-
-    const subDir = opfsRoot.getDirectoryHandle(dirName, { create: true });  //TODO: don't allow create here, need a startup check .exists()
-    const recordFileHandle = await subDir.getFileHandle(idxFileUid, {create: true}); //create true needed here
+    const subDir = opfsRoot.getDirectoryHandle(subDir.path, { create: true });  //TODO: don't allow create here, need a startup check .exists()
+    const recordFileHandle = await subDir.getFileHandle(subDir.fileUid, {create: true}); //create true needed here
     const recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
 
     recordAccessHandle.truncate(0);
@@ -37,14 +28,17 @@ async function write2ToOpfs(obj, idxFileUid, dirName) {
     recordAccessHandle.close();
 }
 
-//for 'puts' to studentData and snippets
-async function write1ToOpfs(obj, idxFileUid) {
+function prepFileContent(obj) {
     const str = JSON.stringify(obj);
     const textEncoder = new TextEncoder();
-    const content = textEncoder.encode(str);
+    
+    return textEncoder.encode(str);
+}
 
+async function writeToFile(obj, fileName) {
+    const content = prepFileContent(obj);
     const opfsRoot = await navigator.storage.getDirectory();
-    const idxFileHandle = await opfsRoot.getFileHandle(idxFileUid, {create: true}); //TODO: don't allow create here, need a startup check .exists()
+    const idxFileHandle = await opfsRoot.getFileHandle(fileName, {create: true}); //TODO: don't allow create here, need a startup check .exists()
     const idxAccessHandle = await idxFileHandle.createSyncAccessHandle();
 
     idxAccessHandle.truncate(0);
