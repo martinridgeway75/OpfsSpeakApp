@@ -8,12 +8,12 @@ onmessage = (e) => {
     const data = e.data;
 
     if (data?.subDir) {
-        writeToFileInSubDir(data.subDir);
+        writeFileInSubDir(data.subDir);
     }
-    writeToFile(data.obj, data.fileName);
+    writeFile(data.obj, data.fileName);
 }
 
-async function writeToFileInSubDir(subDir) {
+async function writeFileInSubDir(subDir) {
 //  subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }
 
     const content = prepFileContent(subDir.obj);
@@ -31,11 +31,11 @@ async function writeToFileInSubDir(subDir) {
 function prepFileContent(obj) {
     const str = JSON.stringify(obj);
     const textEncoder = new TextEncoder();
-    
+
     return textEncoder.encode(str);
 }
 
-async function writeToFile(obj, fileName) {
+async function writeFile(obj, fileName) {
     const content = prepFileContent(obj);
     const opfsRoot = await navigator.storage.getDirectory();
     const idxFileHandle = await opfsRoot.getFileHandle(fileName, {create: true}); //TODO: don't allow create here, need a startup check .exists()
