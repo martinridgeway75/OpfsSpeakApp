@@ -1,10 +1,33 @@
 
-//WORKER COMMS
+//DB COMMS
+/**********************/
+//read
+getRecordsIndexFromDbAtInit();
+getRubricIndexesFromDb();
+getStudentsFromDb();
+getSnippetsFromDb();
+fetchSelectedRecordsForDownload();
+fetchSingleRecordForDownload();
+getSelectedRubric();
 
-//@subDir:
-//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }} //files in records and rubrics subDir.s
-//@root:
-//  obj = { obj: {}, fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
+//write
+pushRecordsToDb();
+proceedWithRubricUpdateExisting();
+proceedWithRubricSaveAsNew();
+saveStudentData();
+saveSnippetData();
+saveUpdatedRecords();
+
+
+//delete
+deleteRecordsViaMap();
+removeRubrikFromDb();
+
+
+//individual files in records and rubrics subDir.s
+//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }}
+//studentData, snippets, recordsIdx, rubricsIdx
+//  obj = { obj: {}, fileName: "studentData" }
 function writeToDb(obj) {
     const myWorker = new Worker("js/writeDb.js");
 
@@ -18,9 +41,8 @@ function writeToDb(obj) {
 
 /**********************/
 
-//@subDir:
-//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }} //files in records and rubrics subDir.s
-
+//individual files in records and rubrics subDir.s
+//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
 function deleteFromDb() {
     const myWorker = new Worker("js/deleteDb.js");
 
@@ -32,18 +54,12 @@ function deleteFromDb() {
 // const obj = { obj: {index1: "123-456789-78987987"}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }};
 // deleteFromDb(obj);
 
-
-
-
-
-
 /**********************/
 
-//@subDir:
-//  obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }} //files in records and rubrics subDir.s
-//@root:
-//  obj = { fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
-
+//individual files in records and rubrics subDir.s
+//  obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
+//studentData, snippets, recordsIdx, rubricsIdx
+//  obj = { fileName: "studentData" }
 function readFromDb(obj) {
     const myWorker = new Worker("js/readDb.js");
 
@@ -52,9 +68,12 @@ function readFromDb(obj) {
     }
     myWorker.postMessage(obj);
 }
-//NOTE: props are EITHER || OR 
+// either
+// studentData, snippets, recordsIdx, rubricsIdx
 // const idxObj = { fileName: "recordsIdx" };
-// const recordObj = { subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }};
-
 // readFromDb(idxObj);
+
+// or
+//individual files in records and rubrics subDir.s
+// const recordObj = { subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }};
 // readFromDb(recordObj);
