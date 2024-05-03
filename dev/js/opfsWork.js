@@ -3,10 +3,10 @@
 
 //WORKER COMMS
 
-//@root:
-//  data = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" } //files in records and rubrics subDir.s
 //@subDir:
-//  data = { obj: {}, fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
+//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }} //files in records and rubrics subDir.s
+//@root:
+//  obj = { obj: {}, fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
 function writeToDb(obj) {
     const myWorker = new Worker("js/2-worker.js");
 
@@ -16,6 +16,12 @@ function writeToDb(obj) {
     }
     myWorker.postMessage(obj);
 }
+
+//@subDir:
+//  obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }} //files in records and rubrics subDir.s
+//@root:
+//  obj = { fileName: "studentData" } //studentData, snippets, recordsIdx, rubricsIdx
+
 function readFromDb(obj) {
     const myWorker = new Worker("js/3-worker.js");
 
