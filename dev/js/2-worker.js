@@ -57,7 +57,7 @@ async function readFilesFromSubDir(arrOfFiles, path) {
     const opfsRoot = await navigator.storage.getDirectory();
     const subDir = opfsRoot.getDirectoryHandle(path);
     
-    //TODO: for fileUid in arrOfFiles
+    //TODO: promise.all()
 
     let recordFileHandle = await subDir.getFileHandle(fileUid);
     let recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
