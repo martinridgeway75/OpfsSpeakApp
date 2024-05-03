@@ -47,9 +47,3 @@ async function readFilesFromSubDir(arrOfFileNames, path) {
         postMessage(arrOfObjs);
     });
 }
-
-// async function deleteFile(fileName) {
-//     const opfsRoot = await navigator.storage.getDirectory();
-    
-//     opfsRoot.removeEntry(fileName);
-// }

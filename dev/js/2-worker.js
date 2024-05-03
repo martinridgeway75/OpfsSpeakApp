@@ -39,3 +39,15 @@ async function writeFile(obj, fileName) {
     idxAccessHandle.close();
     postMessage("idx done");
 }
+
+//TODO: deletes are only for records in subFolders
+// idx file is updated in the usual way (i.e. overwritten)
+
+//delete prompted when subDir.obj === null
+async function deleteFile(subDir) {
+    if (subDir.obj !== null) { return; }
+    const opfsRoot = await navigator.storage.getDirectory();
+    const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path);
+
+    opfsSubDir.removeEntry(subDir.fileUid);
+}
