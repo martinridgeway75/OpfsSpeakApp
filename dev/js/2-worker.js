@@ -2,23 +2,17 @@
 onmessage = (e) => {
     const data = e.data;
 
-    //single file read
-    //readFile(fileName).then( (obj) => {
-        //postMessage(obj);
-    //});
-
-
     //content writes
     writeFile(data.obj, data.fileName).then( () => {
         if (!data?.subDir) {
-            postMessage("done file");
+            postMessage("idx done");
             return;
         }
         writeFileToSubDir(data.subDir).then( () => {
-            postMessage("done new or edited record + file");
+            postMessage(" ++ new file");
         });
     });
-}
+};
 
 function prepFileContent(obj) {
     const str = JSON.stringify(obj);
@@ -26,51 +20,6 @@ function prepFileContent(obj) {
 
     return textEncoder.encode(str);
 }
-function convertFileContent(dataView) {
-    const textDecoder = new TextDecoder();
-    const str = textDecoder.decode(dataView);
-
-    return JSON.parse(str);
-}
-
-async function deleteFile(fileName) {
-    const opfsRoot = await navigator.storage.getDirectory();
-    
-    opfsRoot.removeEntry(fileName);
-}
-
-
-async function readFile(fileName) {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const idxFileHandle = await opfsRoot.getFileHandle(fileName);
-    const idxAccessHandle = await idxFileHandle.createSyncAccessHandle();
-    const size = idxAccessHandle.getSize();
-    const dataView = new DataView(new ArrayBuffer(size));
-
-    idxAccessHandle.read(dataView, {at: 0});
-    idxAccessHandle.close();
-
-    return convertFileContent(dataView);
-}
-
-async function readFilesFromSubDir(arrOfFiles, path) {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const subDir = opfsRoot.getDirectoryHandle(path);
-    
-    //TODO: promise.all()
-
-    let recordFileHandle = await subDir.getFileHandle(fileUid);
-    let recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
-    let size = recordAccessHandle.getSize();
-    let dataView = new DataView(new ArrayBuffer(size));
-
-    recordAccessHandle.read(dataView, {at: 0});
-    recordAccessHandle.close();
-
-    return convertFileContent(dataView);
-
-}
-
 async function writeFileToSubDir(subDir) {
 //  subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }
 
