@@ -25,7 +25,7 @@ async function writeFileToSubDir(subDir) {
     recordAccessHandle.write(content, {at: 0});
     recordAccessHandle.flush();
     recordAccessHandle.close();
-    postMessage("new file done");
+    postMessage(null);
 }
 async function writeFile(obj, fileName) {
     const content = prepFileContent(obj);
@@ -37,17 +37,5 @@ async function writeFile(obj, fileName) {
     idxAccessHandle.write(content, {at: 0});
     idxAccessHandle.flush();
     idxAccessHandle.close();
-    postMessage("idx done");
-}
-
-//TODO: deletes are only for records in subFolders
-// idx file is updated in the usual way (i.e. overwritten)
-
-//delete prompted when subDir.obj === null
-async function deleteFile(subDir) {
-    if (subDir.obj !== null) { return; }
-    const opfsRoot = await navigator.storage.getDirectory();
-    const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path);
-
-    opfsSubDir.removeEntry(subDir.fileUid);
+    postMessage(null);
 }
