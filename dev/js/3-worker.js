@@ -2,10 +2,11 @@
 onmessage = (e) => {
     const data = e.data;
 
-    //single file read
-    readFile(fileName).then( (obj) => {
-        postMessage(obj);
-    });
+    if (!data?.subDir) {
+        readFile(data.fileName);
+        return;
+    }
+    readFilesFromSubDir(data.subDir.fileUidsArr, data.subDir.path);
 }
 
 function convertFileContent(dataView) {
@@ -14,7 +15,6 @@ function convertFileContent(dataView) {
 
     return JSON.parse(str);
 }
-
 async function readFile(fileName) {
     const opfsRoot = await navigator.storage.getDirectory();
     const idxFileHandle = await opfsRoot.getFileHandle(fileName);
@@ -24,41 +24,29 @@ async function readFile(fileName) {
 
     idxAccessHandle.read(dataView, {at: 0});
     idxAccessHandle.close();
-
-    return convertFileContent(dataView);
+    postMessage(convertFileContent(dataView));
 }
-
-//TODO: is it possible to pass the handle?
-async function readOneFileFromSubDir(fileName, subDir) {
-    let recordFileHandle = await subDir.getFileHandle(fileName);
-    let recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
-    let size = recordAccessHandle.getSize();
-    let dataView = new DataView(new ArrayBuffer(size));
+async function readOneFileFromSubDir(fileName, path) {
+    const opfsRoot = await navigator.storage.getDirectory();
+    const subDir = await opfsRoot.getDirectoryHandle(path);
+    const recordFileHandle = await subDir.getFileHandle(fileName);
+    const recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
+    const size = recordAccessHandle.getSize();
+    const dataView = new DataView(new ArrayBuffer(size));
 
     recordAccessHandle.read(dataView, {at: 0});
     recordAccessHandle.close();
 
     return convertFileContent(dataView);
 }
-
-
 async function readFilesFromSubDir(arrOfFileNames, path) {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const subDir = opfsRoot.getDirectoryHandle(path);
-
-    let tempArr = arrOfFileNames.map( (fileName) => {
-        return readOneFileFromSubDir(fileName, subDir);
+    const mappedArr = arrOfFileNames.map( async (fileName) => {
+        return await readOneFileFromSubDir(fileName, path);
     });
-    let arrOfObjs = Promise.all( tempArr );
-
-    return arrOfObjs;
+    Promise.all( mappedArr ).then( (arrOfObjs) => {
+        postMessage(arrOfObjs);
+    });
 }
-
-
-
-
-
-
 
 // async function deleteFile(fileName) {
 //     const opfsRoot = await navigator.storage.getDirectory();

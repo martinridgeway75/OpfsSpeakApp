@@ -2,16 +2,10 @@
 onmessage = (e) => {
     const data = e.data;
 
-    //content writes
-    writeFile(data.obj, data.fileName).then( () => {
-        if (!data?.subDir) {
-            postMessage("idx done");
-            return;
-        }
-        writeFileToSubDir(data.subDir).then( () => {
-            postMessage(" ++ new file");
-        });
-    });
+    if (data?.subDir) {
+        writeFileToSubDir(data.subDir);
+    }
+    writeFile(data.obj, data.fileName);
 };
 
 function prepFileContent(obj) {
@@ -21,18 +15,17 @@ function prepFileContent(obj) {
     return textEncoder.encode(str);
 }
 async function writeFileToSubDir(subDir) {
-//  subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }
-
     const content = prepFileContent(subDir.obj);
     const opfsRoot = await navigator.storage.getDirectory();
-    const subDir = opfsRoot.getDirectoryHandle(subDir.path, { create: true });  //TODO: don't allow create here, need a startup check .exists()
-    const recordFileHandle = await subDir.getFileHandle(subDir.fileUid, {create: true}); //create true needed here
+    const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path, { create: true });  //TODO: don't allow create here, need a startup check .exists()
+    const recordFileHandle = await opfsSubDir.getFileHandle(subDir.fileUid, {create: true}); //create true needed here
     const recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
 
     recordAccessHandle.truncate(0);
     recordAccessHandle.write(content, {at: 0});
     recordAccessHandle.flush();
     recordAccessHandle.close();
+    postMessage("new file done");
 }
 async function writeFile(obj, fileName) {
     const content = prepFileContent(obj);
@@ -44,4 +37,5 @@ async function writeFile(obj, fileName) {
     idxAccessHandle.write(content, {at: 0});
     idxAccessHandle.flush();
     idxAccessHandle.close();
+    postMessage("idx done");
 }
