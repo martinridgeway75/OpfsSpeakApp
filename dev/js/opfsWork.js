@@ -1,21 +1,53 @@
 
 //DB COMMS
+
+function docEl(id) {
+    return document.getElementById(id); // || null
+}
+
+function displayDbQuota() {
+    let msg = "";
+
+    try {
+        navigator.storage.estimate().then((estimate) => {
+            const usage = "Used: " + ((estimate.usage / 1024 / 1024).toFixed(1)) + "MB";
+            const quota = "Available: " + ((estimate.quota / 1024 / 1024).toFixed(1)) + "MB";
+
+            msg = "Database quota\r\n" + usage + "\r\n" + quota;
+        });
+    } catch (e) {
+        msg = "Database unavailable!\r\n" + (e).toString();
+    }
+    docEl("welcomeMsg").textContent = msg;
+}
+
+function firstReadDatabase() {
+    readFromDb({ fileName: "recordsIdx" }, "recordsIndex"); //[]
+    readFromDb({ fileName: "rubricsIdx" }, "rubricsIndex"); //{} !!
+    readFromDb({ fileName: "studentData" }, "studentData"); //[]
+    readFromDb({ fileName: "snippets" }, "snippets"); //[]
+}
+
+
+
 /**********************/
+
 //read
-getRecordsIndexFromDbAtInit();
-getRubricIndexesFromDb();
-getStudentsFromDb();
-getSnippetsFromDb();
+// getRecordsIndexFromDbAtInit();
+// getRubricIndexesFromDb();
+// getStudentsFromDb();
+// getSnippetsFromDb();
 fetchSelectedRecordsForDownload();
 fetchSingleRecordForDownload();
 getSelectedRubric();
 
 //write
+saveStudentData();
+saveSnippetData();
+
 pushRecordsToDb();
 proceedWithRubricUpdateExisting();
 proceedWithRubricSaveAsNew();
-saveStudentData();
-saveSnippetData();
 saveUpdatedRecords();
 
 
@@ -23,6 +55,7 @@ saveUpdatedRecords();
 deleteRecordsViaMap();
 removeRubrikFromDb();
 
+/**********************/
 
 //individual files in records and rubrics subDir.s
 //  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }}
@@ -43,7 +76,7 @@ function writeToDb(obj) {
 
 //individual files in records and rubrics subDir.s
 //  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
-function deleteFromDb() {
+function deleteFromDb(obj) {
     const myWorker = new Worker("js/deleteDb.js");
 
     myWorker.onmessage = (e) => {
@@ -60,11 +93,20 @@ function deleteFromDb() {
 //  obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
 //studentData, snippets, recordsIdx, rubricsIdx
 //  obj = { fileName: "studentData" }
-function readFromDb(obj) {
+async function readFromDb(obj, prop) {
     const myWorker = new Worker("js/readDb.js");
 
     myWorker.onmessage = (e) => {
-        console.log(e.data);
+        if (e.data == undefined)  { return; }
+        if (obj?.subDir) {
+            //these are arrays of records or rubrics
+            return;
+        }
+        if (prop === "recordsIndex") {
+            appEditor[prop] = flattenRecords(e.data);
+            return;
+        }
+        appEditor[prop] = e.data;
     }
     myWorker.postMessage(obj);
 }

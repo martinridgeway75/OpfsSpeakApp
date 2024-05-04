@@ -17,8 +17,8 @@ function prepFileContent(obj) {
 async function writeFileToSubDir(subDir) {
     const content = prepFileContent(subDir.obj);
     const opfsRoot = await navigator.storage.getDirectory();
-    const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path, { create: true });  //TODO: don't allow create here, need a startup check .exists()
-    const recordFileHandle = await opfsSubDir.getFileHandle(subDir.fileUid, {create: true}); //create true needed here
+    const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path, { create: true });
+    const recordFileHandle = await opfsSubDir.getFileHandle(subDir.fileUid, {create: true});
     const recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
 
     recordAccessHandle.truncate(0);
@@ -30,7 +30,7 @@ async function writeFileToSubDir(subDir) {
 async function writeFile(obj, fileName) {
     const content = prepFileContent(obj);
     const opfsRoot = await navigator.storage.getDirectory();
-    const idxFileHandle = await opfsRoot.getFileHandle(fileName, {create: true}); //TODO: don't allow create here, need a startup check .exists()
+    const idxFileHandle = await opfsRoot.getFileHandle(fileName, {create: true});
     const idxAccessHandle = await idxFileHandle.createSyncAccessHandle();
 
     idxAccessHandle.truncate(0);
