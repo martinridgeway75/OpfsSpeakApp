@@ -155,7 +155,7 @@ function sortStudentData(refArr) {
     return refArr.sort(function (a, b) { return a.stCls.localeCompare(b.stCls) || a.stNme.localeCompare(b.stNme); });
 }
 function reloadStudents(bool) {
-    const len = appEditor.studentData.length;
+    let len = appEditor.studentData.length;
     let i;
 
     emptyContent(docEl("editStudents_body"));
