@@ -26,10 +26,9 @@ async function writeFileToSubDir(subDir) {
         recordAccessHandle.write(content, {at: 0});
         recordAccessHandle.flush();
         recordAccessHandle.close();
-        postMessage("OK");
     } catch (e) {
-            postMessage( (e).toString() );
-        }
+        postMessage( (e).toString() );
+    }
 }
 async function writeFile(obj, fileName) {
     try {

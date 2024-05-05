@@ -1,10 +1,7 @@
 
-//DB COMMS
-
 function docEl(id) {
     return document.getElementById(id); // || null
 }
-
 function displayDbQuota() {
     let msg = "";
 
@@ -20,9 +17,8 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-
 function hitDb(obj, worker, callBack) {
-    const workerName = "js/" + worker + "Db.js";
+    const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
@@ -33,10 +29,10 @@ function hitDb(obj, worker, callBack) {
 
 /********************/
 //Formerly: readStudentData();
-//hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expects [] || undefined
+//hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expect [] || undefined
 
 //Formerly: saveStudentData();
-//hitDb({ obj: [], fileName: "studentData" }, "write", hasSetStudentData); //expects <String>
+//hitDb({ obj: [], fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
 
 /********************/
 

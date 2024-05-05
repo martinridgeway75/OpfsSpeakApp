@@ -1,10 +1,7 @@
 
-//DB COMMS
-
 function docEl(id) {
     return document.getElementById(id); // || null
 }
-
 function displayDbQuota() {
     let msg = "";
 
@@ -20,7 +17,6 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-
 function hitDb(obj, worker, callBack) {
     const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
@@ -35,10 +31,9 @@ function hitDb(obj, worker, callBack) {
 
 //on first hit, snippets depend on fetch of rubrics
 //formerly getSnippetsFromDb()
-//hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expects [] || undefined
+//hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expect [] || undefined
 
-//formerly saveSnippetData()
-//hitDb({ obj: [], fileName: "snippets" }, "write", hasSetSnippets); //expects <String>
+//hitDb({ obj: [], fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
 
 /********************/
 
@@ -51,7 +46,7 @@ function hasFetchedSnippets(data) {
         appEditor.db.snippets = true;
     }  
 }
-function hasSetSnippets(msg) {
+function hasSetSnippets(msg) { //TODO: callback of hitDb...was formerly: saveSnippetData()
     if (msg === "OK") {
         exitSnippets();
         displayMsg("b");
@@ -59,8 +54,6 @@ function hasSetSnippets(msg) {
     }
     displayMsg("a", msg);
 }
-
-
 function buildTableForSnippets(bool) { //if true -> hardreload, if false -> update tags only (e.g. when rubrics are changed)
     var available = appEditor.snippets.map(function (el) { return el.snippetRubric; });
     var snippetsArr,
@@ -266,7 +259,7 @@ function saveChangesToSnippets() {
     if (appEditor.snippets.length) {
         var isUpdated = updateAllSnippetData();
 
-        if (isUpdated === true) { saveSnippetData(); }
+        if (isUpdated === true) { saveSnippetData(); } //TODO: hasSetSnippets() is the callback of hitDb()
     }
 }
 function updateAllSnippetData() {

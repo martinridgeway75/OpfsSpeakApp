@@ -1,6 +1,4 @@
 
-//DB COMMS
-
 function docEl(id) {
     return document.getElementById(id); // || null
 }
@@ -21,101 +19,40 @@ function displayDbQuota() {
     docEl("welcomeMsg").textContent = msg;
 }
 
-function firstReadDatabase() {
-    readFromDb({ fileName: "recordsIdx" }, "recordsIndex"); //[]
-    readFromDb({ fileName: "rubricsIdx" }, "rubricsIndex"); //{} !!
-    readFromDb({ fileName: "studentData" }, "studentData"); //[]
-    readFromDb({ fileName: "snippets" }, "snippets"); //[]
-}
 
-
-
-/**********************/
+/*******ref***************/
 
 //read
-// getRecordsIndexFromDbAtInit();
-// getRubricIndexesFromDb();
-// getStudentsFromDb();
-// getSnippetsFromDb();
+getRecordsIndexFromDbAtInit();
 fetchSelectedRecordsForDownload();
 fetchSingleRecordForDownload();
-getSelectedRubric();
 
 //write
-saveStudentData();
-saveSnippetData();
-
 pushRecordsToDb();
-proceedWithRubricUpdateExisting();
-proceedWithRubricSaveAsNew();
 saveUpdatedRecords();
-
 
 //delete
 deleteRecordsViaMap();
-removeRubrikFromDb();
 
 /**********************/
 
-//individual files in records and rubrics subDir.s
-//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "123-456789-78987987" }}
-//studentData, snippets, recordsIdx, rubricsIdx
-//  obj = { obj: {}, fileName: "studentData" }
-function writeToDb(obj) {
-    const myWorker = new Worker("js/writeDb.js");
+function hitDb(obj, worker, callBack) { //worker: "read", "write", "delete"
+    const workerName = "js/" + worker + "db.js";
+    const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
-        console.log(e.data);
+        callBack(e.data);
     }
     myWorker.postMessage(obj);
 }
-// const obj = { obj: {index1: "123-456789-78987987"}, fileName: "recordsIdx", subDir: { path: "records", obj: {b:"2"}, fileUid: "123-456789-78987987" }};
-// writeToDb(obj);
+//@write
+// const obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "" }};
+// hitDb(obj, "write", callBack);
 
-/**********************/
+//@delete
+// const obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["","",""] }}
+// hitDb(obj, "delete", callBack);
 
-//individual files in records and rubrics subDir.s
-//  obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
-function deleteFromDb(obj) {
-    const myWorker = new Worker("js/deleteDb.js");
-
-    myWorker.onmessage = (e) => {
-        console.log(e.data);
-    }
-    myWorker.postMessage(obj);
-}
-// const obj = { obj: {index1: "123-456789-78987987"}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }};
-// deleteFromDb(obj);
-
-/**********************/
-
-//individual files in records and rubrics subDir.s
-//  obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }}
-//studentData, snippets, recordsIdx, rubricsIdx
-//  obj = { fileName: "studentData" }
-async function readFromDb(obj, prop) {
-    const myWorker = new Worker("js/readDb.js");
-
-    myWorker.onmessage = (e) => {
-        if (e.data == undefined)  { return; }
-        if (obj?.subDir) {
-            //these are arrays of records or rubrics
-            return;
-        }
-        if (prop === "recordsIndex") {
-            appEditor[prop] = flattenRecords(e.data);
-            return;
-        }
-        appEditor[prop] = e.data;
-    }
-    myWorker.postMessage(obj);
-}
-// either
-// studentData, snippets, recordsIdx, rubricsIdx
-// const idxObj = { fileName: "recordsIdx" };
-// readFromDb(idxObj);
-
-// or
-//individual files in records and rubrics subDir.s
-// const recordObj = { subDir: { path: "records", fileUidsArr: ["123-456789-78987987"] }};
-// readFromDb(recordObj);
+//@read
+// const obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["","",""] }} //read multiple records during print/pdf
+// hitDb(obj, "read", callBack);

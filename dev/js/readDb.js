@@ -2,10 +2,10 @@ onmessage = (e) => {
     const data = e.data;
 
     if (!data?.subDir) {
-        readFile(data.fileName);
+        readFile(data.fileName).then( (msg) => { postMessage(msg); });
         return;
     }
-    readFilesFromSubDir(data.subDir.fileUidsArr, data.subDir.path);
+    readFilesFromSubDir(data.subDir.fileUidsArr, data.subDir.path).then( (msg) => { postMessage(msg); });
 }
 
 function convertFileContent(dataView) {
@@ -24,9 +24,9 @@ async function readFile(fileName) {
 
         idxAccessHandle.read(dataView, {at: 0});
         idxAccessHandle.close();
-        postMessage(convertFileContent(dataView));
+        return convertFileContent(dataView);
     } catch (e) {
-        postMessage(undefined);
+        return undefined;
     }
 }
 async function readOneFileFromSubDir(fileName, path) {
@@ -50,9 +50,6 @@ async function readFilesFromSubDir(arrOfFileNames, path) {
         return await readOneFileFromSubDir(fileName, path);
     });
     Promise.all( mappedArr ).then( (arrOfObjs) => {
-        arrOfObjs = arrOfObjs.filter( (el) => {
-            return el !== undefined;
-        });
-        postMessage(arrOfObjs);
+        return arrOfObjs.filter( (el) => { return el !== undefined; });
     });
 }
