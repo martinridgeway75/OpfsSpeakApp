@@ -21,7 +21,8 @@ function displayDbQuota() {
     docEl("welcomeMsg").textContent = msg;
 }
 
-function hitDb(obj, workerName, callBack) {
+function hitDb(obj, worker, callBack) {
+    const workerName = "js/" + worker + "Db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
@@ -31,13 +32,11 @@ function hitDb(obj, workerName, callBack) {
 }
 
 /********************/
+//Formerly: readStudentData();
+//hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expects [] || undefined
 
-function readStudentData() {
-    hitDb({ fileName: "studentData" }, "js/readDb.js", hasFetchedStudentData); //expects [] || undefined
-}
-function saveStudentData() {
-    hitDb({ obj: [], fileName: "studentData" }, "js/writeDb.js", hasSetStudentData); //expects <String>
-}
+//Formerly: saveStudentData();
+//hitDb({ obj: [], fileName: "studentData" }, "write", hasSetStudentData); //expects <String>
 
 /********************/
 
@@ -155,7 +154,7 @@ function sortStudentData(refArr) {
     return refArr.sort(function (a, b) { return a.stCls.localeCompare(b.stCls) || a.stNme.localeCompare(b.stNme); });
 }
 function reloadStudents(bool) {
-    let len = appEditor.studentData.length;
+    const len = appEditor.studentData.length;
     let i;
 
     emptyContent(docEl("editStudents_body"));
