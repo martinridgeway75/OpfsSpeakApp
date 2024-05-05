@@ -1,4 +1,3 @@
-
 onmessage = (e) => {
     const data = e.data;
 
@@ -27,7 +26,7 @@ async function readFile(fileName) {
         idxAccessHandle.close();
         postMessage(convertFileContent(dataView));
     } catch (e) {
-        postMessage(null);
+        postMessage(undefined);
     }
 }
 async function readOneFileFromSubDir(fileName, path) {
