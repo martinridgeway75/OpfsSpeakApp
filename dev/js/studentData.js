@@ -58,6 +58,20 @@ function initStudentData() { //init
     }
     reloadStudents(true);
 }
+
+// function saveStudentData() {
+//     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/studentData";
+
+//     set(ref(db, path), appEditor.studentData).then(() => {
+//         displayMsg("i");
+//         }).catch((error) => {
+//             chkPermission(error);
+//             displayMsg("a", error);
+//         });
+// }
+
+/*************************/
+
 function handleStudentsCSV(evt) { //csv upload...
     const file = evt.target.files[0];
 

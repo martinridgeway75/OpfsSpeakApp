@@ -54,6 +54,44 @@ function hasSetSnippets(msg) { //TODO: callback of hitDb...was formerly: saveSni
     }
     displayMsg("a", msg);
 }
+
+// function getSnippetsFromDb() {
+//     const uid = auth.currentUser.uid;
+
+//     if (appEditor.db.rubrics === false) {
+//         getRubricIndexesBeforeGetSnippets(uid);
+//         return;
+//     } 
+//     const path = "" + appEditor.settings.dbCtx + "/" + uid + "/snippets";
+    
+//     onValue(ref(db, path), (snapshot) => {
+//         appEditor.db.snippets = true;
+//         appEditor.snippets = snapshot.val() || [];
+//         initSnippets();
+//         snippetHandlersOn();
+//     }, (error) => {
+//         chkPermission(error);
+//     }, {
+//         onlyOnce: true
+//     });
+// }
+
+// function saveSnippetData() {
+//     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/snippets";
+
+//     set(ref(db, path), appEditor.snippets).then(() => {
+//         exitSnippets();
+//         displayMsg("b");
+//         }).catch((error) => {
+//             chkPermission(error);
+//             displayMsg("a", error);
+//         });
+// }
+
+
+
+/*****************************/
+
 function buildTableForSnippets(bool) { //if true -> hardreload, if false -> update tags only (e.g. when rubrics are changed)
     var available = appEditor.snippets.map(function (el) { return el.snippetRubric; });
     var snippetsArr,
