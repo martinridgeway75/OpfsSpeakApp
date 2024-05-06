@@ -86,7 +86,7 @@ function hasRemovedRubric(msg) { //TODO: callback of hitDb...was formerly: ()
 
 /*************************/
 
-function proceedWithRubricSaveAsNew(rubricName, uid, bool) {
+function proceedWithRubricSaveAsNew(rubricName, uid) {
     const dbCtx = "" + appEditor.settings.dbCtx;
     const postData = convertToRubricObj(rubricName);
     const objPath = dbCtx + "/" + uid + "/savedRubricsIndex/";
@@ -100,17 +100,6 @@ function proceedWithRubricSaveAsNew(rubricName, uid, bool) {
     updates[newObjKeyPath] = postData;
     updates[objIdxPath] = idxObj;
 
-    if (bool === true) {
-        const sharePath = "sharedRubrics/rubricsIndex/";
-        
-        newShareKey = push(child(ref(db), sharePath)).key;
-
-        const sharedIdxPath = "sharedRubrics/rubricsIndex/" + newShareKey;
-        const sharedRubricPath = "sharedRubrics/rubrics/" + newShareKey;
-        
-        updates[sharedIdxPath] = idxObj;
-        updates[sharedRubricPath] = postData;
-    }
     update(ref(db), updates).then(() => {
         rubricCommitted(newPostKey, idxObj, newShareKey);
     }).catch((error) => {
@@ -119,7 +108,7 @@ function proceedWithRubricSaveAsNew(rubricName, uid, bool) {
         enableEl("editRubric");
     });
 }
-function proceedWithRubricUpdateExisting(rubricName, key, uid, bool) { //#1. Rubric exists and needs to be updated
+function proceedWithRubricUpdateExisting(rubricName, key, uid) { //#1. Rubric exists and needs to be updated
     const dbCtx = "" + appEditor.settings.dbCtx;
     const postData = convertToRubricObj(rubricName);
     const idxObj = idxObjFromRubricPostData(postData);
@@ -131,17 +120,6 @@ function proceedWithRubricUpdateExisting(rubricName, key, uid, bool) { //#1. Rub
     updates[objIdxPath] = idxObj;
     updates[newObjKeyPath] = postData;
 
-    if (bool === true) {
-        const objPath = "sharedRubrics/rubricsIndex/";
-
-        newShareKey = push(child(ref(db), objPath)).key;
-
-        const sharedIdxPath = "sharedRubrics/rubricsIndex/" + newShareKey;
-        const sharedRubricPath = "sharedRubrics/rubrics/" + newShareKey;
-        
-        updates[sharedIdxPath] = idxObj;
-        updates[sharedRubricPath] = postData;
-    }
     update(ref(db), updates).then(() => {
         rubricCommitted(key, idxObj, newShareKey);
     }).catch((error) => {
@@ -183,18 +161,11 @@ function rubricsGetSaved(path) {
     });
 }
 function getRubricIndexesFromDb() {  
-    const sharedPath = "sharedRubrics/rubricsIndex";
     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubricsIndex";
 
-    onValue(ref(db, sharedPath), (snapshot) => {
-        appEditor.sharedRubricsIndex = snapshot.val() || {};
-        rubricsGetSaved(path);
-    }, (error) => {
-        chkPermission(error);
-    }, {
-        onlyOnce: true
-    });
+    rubricsGetSaved(path);
 }
+//@grader
 function getSelectedRubric(idx) {
     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubrics/" + idx;
     
@@ -210,16 +181,14 @@ function getSelectedRubric(idx) {
         onlyOnce: true
     });
 }
-function getSelectedRubrik(rubricNameKey, bool) { //bool === false: take shared rubrik
+//@records
+function getSelectedRubrik(rubricNameKey) {
     if (rubricNameKey === "" || rubricNameKey == undefined) { displayMsg("f"); return; }
 
     const uid = auth.currentUser.uid;    
     let selectedRubik;
     let path = "" + appEditor.settings.dbCtx + "/" + uid + "/savedRubrics/" + rubricNameKey;
 
-    if (bool === false) {
-        path = "sharedRubrics/rubrics/" + rubricNameKey;
-    }
     onValue(ref(db, path), (snapshot) => {
         selectedRubik = snapshot.val();
 
@@ -227,9 +196,6 @@ function getSelectedRubrik(rubricNameKey, bool) { //bool === false: take shared 
             appEditor.appEditRecords.loadedRubric = [];
             appEditor.appEditRecords.loadedRubric.push(selectedRubik);
             appEditor.appEditRecords.loadedRubric[0].rubricKey = rubricNameKey;
-            if (bool === false) {
-                appEditor.appEditRecords.loadedRubric[0].isFromShared = true;
-            }
             showLoadedRubrik();
         }
     }, (error) => {
@@ -242,38 +208,38 @@ function getSelectedRubrik(rubricNameKey, bool) { //bool === false: take shared 
 //RUBRICS
 
 function rubricSaveAsNew(rubricName, uid) { //#2. Rubric is new and needs to be created || Rubric exists, BUT is being created as a copy of itself WITH A NEW NAME
-    if (docEl("shareThisRubric").checked !== true) {
+    // if (docEl("shareThisRubric").checked !== true) {
         proceedWithRubricSaveAsNew(rubricName, uid, false);
-        return;
-    }
-    window.mscConfirm({
-        title: '',
-        subtitle: 'You have opted to share this rubric with all users. Is that correct?',
-        cancelText: 'Cancel',
-        onOk: function () {
-            proceedWithRubricSaveAsNew(rubricName, uid, true);
-        },
-        onCancel: function () {
-            return;
-        }
-    });
+        // return;
+    // }
+    // window.mscConfirm({
+    //     title: '',
+    //     subtitle: 'You have opted to share this rubric with all users. Is that correct?',
+    //     cancelText: 'Cancel',
+    //     onOk: function () {
+    //         proceedWithRubricSaveAsNew(rubricName, uid, true);
+    //     },
+    //     onCancel: function () {
+    //         return;
+    //     }
+    // });
 }
 function rubricUpdateExisting(rubricName, key, uid) { //#2. Rubric is new and needs to be created || Rubric exists, BUT is being created as a copy of itself WITH A NEW NAME
-    if (docEl("shareThisRubric").checked !== true) {
+    // if (docEl("shareThisRubric").checked !== true) {
         proceedWithRubricUpdateExisting(rubricName, key, uid, false);
-        return;
-    }
-    window.mscConfirm({
-        title: '',
-        subtitle: 'You have opted to share this rubric with all users. Is that correct?',
-        cancelText: 'Cancel',
-        onOk: function () {
-            proceedWithRubricUpdateExisting(rubricName, key, uid, true);
-        },
-        onCancel: function () {
-            return;
-        }
-    });
+    //     return;
+    // }
+    // window.mscConfirm({
+    //     title: '',
+    //     subtitle: 'You have opted to share this rubric with all users. Is that correct?',
+    //     cancelText: 'Cancel',
+    //     onOk: function () {
+    //         proceedWithRubricUpdateExisting(rubricName, key, uid, true);
+    //     },
+    //     onCancel: function () {
+    //         return;
+    //     }
+    // });
 }
 function commitRubrik() {
     var uid = auth.currentUser.uid;
@@ -290,10 +256,6 @@ function commitRubrik() {
 
     if (appEditor.appEditRecords.loadedRubric[0] == undefined) {
         rubricSaveAsNew(rubricName, uid); //undefined if this is a new rubric...
-        return;
-    }
-    if (appEditor.appEditRecords.loadedRubric[0].hasOwnProperty("isFromShared") && appEditor.appEditRecords.loadedRubric[0].isFromShared === true) {
-        rubricSaveAsNew(rubricName, uid); //user has modified a shared rubric...
         return;
     }
     relevantKey = appEditor.appEditRecords.loadedRubric[0].rubricKey;
@@ -961,7 +923,7 @@ function convertFromRubrikObj() {
     }
     return allSectionNames;
 }
-function displayAvailableRubriks(available, shared) {
+function displayAvailableRubriks(available) {
     var i;
 
     emptyContent(docEl("ruLoadChkBoxes"));
@@ -971,18 +933,11 @@ function displayAvailableRubriks(available, shared) {
             createAvailableRubriksButtons(available[i], true);
         }
     }
-    if (shared.length) {
-        createAvailableRubriksDivider();
-
-        for (i = 0; i < shared.length; i++) {
-            createAvailableRubriksButtons(shared[i], false);
-        }
-    }
     showEl("ruLoadSelected");
 }
 function loadRubriks() { //init
     docEl("shareThisRubric").checked = false;
-    displayAvailableRubriks(Object.keys(appEditor.rubricsIndex), Object.keys(appEditor.sharedRubricsIndex));
+    displayAvailableRubriks(Object.keys(appEditor.rubricsIndex));
 }
 function getDupsFromArr(arr) {
     var duplicates = {};
@@ -1016,21 +971,15 @@ function fixLoadedRubrikDupSections(allSectionNames) {
 function selectLoadedRubrik() {
     var allRubrikBtns = document.getElementsByName('scalor');
     var rubricNameKey,
-        isShared,
         i;
 
     for (i = 0; i < allRubrikBtns.length; i++) {
         if (allRubrikBtns[i].checked) {
             rubricNameKey = allRubrikBtns[i].value;
-            isShared = allRubrikBtns[i].dataset.share;
             break;
         }
     }
-    if (!isShared) {
-        getSelectedRubrik(rubricNameKey, true);
-        return;
-    }
-    getSelectedRubrik(rubricNameKey, false);
+    getSelectedRubrik(rubricNameKey);
 }
 function showLoadedRubrik() {
     var rubrikKeys = [];
@@ -1053,12 +1002,8 @@ function showLoadedRubrik() {
     showEl("rubricActions");
     docEl("ac_ru_del").style.display = "block";
 }
-function rubricCommitted(key, idxObj, newShareKey) {
+function rubricCommitted(key, idxObj) {
     appEditor.rubricsIndex[key] = idxObj;
-
-    if (newShareKey !== undefined) {
-        appEditor.sharedRubricsIndex[newShareKey] = idxObj;
-    }
     appEditor.appEditRecords.loadedRubric = [];
     updateSnippetRubricTags();
     loadRubriks();
