@@ -32,7 +32,7 @@ function hitDb(obj, worker, callBack) {
 //hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expect [] || undefined
 
 //Formerly: saveStudentData();
-//hitDb({ obj: [], fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
+//hitDb({ obj: appEditor.studentData, fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
 
 /********************/
 

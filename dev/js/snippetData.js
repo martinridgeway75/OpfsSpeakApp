@@ -33,7 +33,8 @@ function hitDb(obj, worker, callBack) {
 //formerly getSnippetsFromDb()
 //hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expect [] || undefined
 
-//hitDb({ obj: [], fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
+//save
+//hitDb({ obj: appEditor.snippets, fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
 
 /********************/
 

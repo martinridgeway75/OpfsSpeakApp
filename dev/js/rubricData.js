@@ -32,17 +32,21 @@ function hitDb(obj, worker, callBack) {
 //getSelectedRubric();
 //hitDb({ fileName: "rubricsIdx", subDir: { path: "rubrics", fileUidsArr: ["","",""] } }, "read", hasFetchedRubric); //expect [] || undefined
 
-//getRubricIndexesFromDb();
-//hitDb({ fileName: "rubricsIdx" }, "read", hasFetchedRubricIdx); //expects {} || undefined
+function getRubricIndexesFromDb() {
+    hitDb({ fileName: "rubricsIdx" }, "read", hasFetchedRubricIdx); //expects {} || undefined
+}
 
-// proceedWithRubricUpdateExisting();
-// proceedWithRubricSaveAsNew();
+// rubricUpdateExisting();
+// rubricSaveAsNew();
 //hitDb({ obj: {}, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: {}, fileUid: "" }}, "write", hasSetRubrics); //expect <String> e || "OK"
 
-//removeRubrikFromDb();
-//hitDb({ obj: {}, fileName: "recordsIdx", subDir: { path: "rubrics", fileUidsArr: ["","",""] }}, "write", hasRemovedRubric);  //expect <String> e || "OK"
+function removeRubrikFromDb(key) {
+    delete appEditor.rubricsIndex[key];
+    hitDb({ obj: appEditor.rubricsIndex, fileName: "recordsIdx", subDir: { path: "rubrics", fileUidsArr: [key] }}, "delete", hasRemovedRubric);  //expect [Uuid] || []
+}
 
-/********************/
+
+/*********callbacks***********/
 
 
 function hasFetchedRubric(data) {
@@ -59,13 +63,16 @@ function hasFetchedRubric(data) {
 }
 
 function hasFetchedRubricIdx(data) {
-    // appEditor.snippets = data || {}; //onerror, data will be undefined
-    // initSnippets();
+    appEditor.rubricsIndex = data || {}; //onerror, data will be undefined
 
-    // if (!appEditor.db.snippets) {
-    //     snippetHandlersOn();
-    //     appEditor.db.snippets = true;
-    // }  
+    if (!appEditor.db.rubrics) {
+        rubrikHandlersOn();
+        appEditor.db.rubrics = true;
+    }
+    if (!isObjEmpty(appEditor.rubricsIndex)) {
+        showEl("ruLoadSelected");
+        loadRubriks();
+    }
 }
 
 
@@ -78,15 +85,16 @@ function hasSetRubrics(msg) { //TODO: callback of hitDb...was formerly: ()
     // displayMsg("a", msg);
 }
 
-function hasRemovedRubric(msg) { //TODO: callback of hitDb...was formerly: ()
+function hasRemovedRubric(key) { //expect [Uuid] || []
+    if (!key.length) { return; }
 
-
-
+    rubrikDestroyed(key[0]);
 }
+
 
 /*************************/
 
-function proceedWithRubricSaveAsNew(rubricName, uid) {
+function rubricSaveAsNew(rubricName, uid) {
     const dbCtx = "" + appEditor.settings.dbCtx;
     const postData = convertToRubricObj(rubricName);
     const objPath = dbCtx + "/" + uid + "/savedRubricsIndex/";
@@ -95,76 +103,39 @@ function proceedWithRubricSaveAsNew(rubricName, uid) {
     const newObjKeyPath = dbCtx + "/" + uid + "/savedRubrics/" + newPostKey;
     const objIdxPath = dbCtx + "/" + uid + "/savedRubricsIndex/" + newPostKey;
     const updates = {};
-    let newShareKey;
 
     updates[newObjKeyPath] = postData;
     updates[objIdxPath] = idxObj;
 
     update(ref(db), updates).then(() => {
-        rubricCommitted(newPostKey, idxObj, newShareKey);
+        rubricCommitted(newPostKey, idxObj);
     }).catch((error) => {
         chkPermission(error);
         displayMsg("d", error);
         enableEl("editRubric");
     });
 }
-function proceedWithRubricUpdateExisting(rubricName, key, uid) { //#1. Rubric exists and needs to be updated
+function rubricUpdateExisting(rubricName, key, uid) { //#1. Rubric exists and needs to be updated
     const dbCtx = "" + appEditor.settings.dbCtx;
     const postData = convertToRubricObj(rubricName);
     const idxObj = idxObjFromRubricPostData(postData);
     const newObjKeyPath = dbCtx + "/" + uid + "/savedRubrics/" + key;
     const objIdxPath = dbCtx + "/" + uid + "/savedRubricsIndex/" + key;
     const updates = {};
-    let newShareKey;
 
     updates[objIdxPath] = idxObj;
     updates[newObjKeyPath] = postData;
 
     update(ref(db), updates).then(() => {
-        rubricCommitted(key, idxObj, newShareKey);
+        rubricCommitted(key, idxObj);
     }).catch((error) => {
         chkPermission(error);
         displayMsg("d", error);
         enableEl("editRubric");
     });
 }
-function removeRubrikFromDb(key) {
-    const ctx = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid;
-    const newObjKeyPath = ctx + "/savedRubrics/" + key;
-    const objIdxPath = ctx + "/savedRubricsIndex/" + key;
-    const updates = {};
 
-    updates[objIdxPath] = null;
-    updates[newObjKeyPath] = null;
 
-    update(ref(db), updates).then(() => {
-        rubrikDestroyed(key);
-    }).catch((error) => {
-        chkPermission(error);
-    });
-}
-function rubricsGetSaved(path) {
-    onValue(ref(db, path), (snapshot) => {
-        appEditor.rubricsIndex = snapshot.val() || {};
-        appEditor.db.rubrics = true;
-
-        if (!isObjEmpty(appEditor.rubricsIndex)) {
-            showEl("ruLoadSelected");
-            loadRubriks();
-        }
-        rubrikHandlersOn();
-
-    }, (error) => {
-        chkPermission(error);
-    }, {
-        onlyOnce: true
-    });
-}
-function getRubricIndexesFromDb() {  
-    const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubricsIndex";
-
-    rubricsGetSaved(path);
-}
 //@grader
 function getSelectedRubric(idx) {
     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubrics/" + idx;
@@ -207,40 +178,6 @@ function getSelectedRubrik(rubricNameKey) {
 
 //RUBRICS
 
-function rubricSaveAsNew(rubricName, uid) { //#2. Rubric is new and needs to be created || Rubric exists, BUT is being created as a copy of itself WITH A NEW NAME
-    // if (docEl("shareThisRubric").checked !== true) {
-        proceedWithRubricSaveAsNew(rubricName, uid, false);
-        // return;
-    // }
-    // window.mscConfirm({
-    //     title: '',
-    //     subtitle: 'You have opted to share this rubric with all users. Is that correct?',
-    //     cancelText: 'Cancel',
-    //     onOk: function () {
-    //         proceedWithRubricSaveAsNew(rubricName, uid, true);
-    //     },
-    //     onCancel: function () {
-    //         return;
-    //     }
-    // });
-}
-function rubricUpdateExisting(rubricName, key, uid) { //#2. Rubric is new and needs to be created || Rubric exists, BUT is being created as a copy of itself WITH A NEW NAME
-    // if (docEl("shareThisRubric").checked !== true) {
-        proceedWithRubricUpdateExisting(rubricName, key, uid, false);
-    //     return;
-    // }
-    // window.mscConfirm({
-    //     title: '',
-    //     subtitle: 'You have opted to share this rubric with all users. Is that correct?',
-    //     cancelText: 'Cancel',
-    //     onOk: function () {
-    //         proceedWithRubricUpdateExisting(rubricName, key, uid, true);
-    //     },
-    //     onCancel: function () {
-    //         return;
-    //     }
-    // });
-}
 function commitRubrik() {
     var uid = auth.currentUser.uid;
     var chkd = allChksPassForNewRubrik();
@@ -923,21 +860,18 @@ function convertFromRubrikObj() {
     }
     return allSectionNames;
 }
-function displayAvailableRubriks(available) {
+function loadRubriks() {
+    const available = Object.keys(appEditor.rubricsIndex);
     var i;
 
     emptyContent(docEl("ruLoadChkBoxes"));
 
     if (available.length) {
         for (i = 0; i < available.length; i++) {
-            createAvailableRubriksButtons(available[i], true);
+            createAvailableRubriksButtons(available[i]);
         }
     }
     showEl("ruLoadSelected");
-}
-function loadRubriks() { //init
-    docEl("shareThisRubric").checked = false;
-    displayAvailableRubriks(Object.keys(appEditor.rubricsIndex));
 }
 function getDupsFromArr(arr) {
     var duplicates = {};
@@ -987,7 +921,6 @@ function showLoadedRubrik() {
 
     showEl("ruNameCurrent");
     docEl("ruNameNewtxt").value = appEditor.appEditRecords.loadedRubric[0].rubricName;
-    docEl("shareThisRubric").checked = false;
     rubrikKeys = convertFromRubrikObj(); //returns the correct order of sections from appEditor.appEditRecords.loadedRubric...
 
     for (i = 0; i < rubrikKeys.length; i++) {
@@ -1018,7 +951,6 @@ function idxObjFromRubricPostData(postData) {
     return newRubricIndexObj;
 }
 function rubrikDestroyed(key) {
-    delete appEditor.rubricsIndex[key];
     appEditor.appEditRecords.loadedRubric = [];
     hideEl("ruLoadSelected");
     exitEditRubrics();

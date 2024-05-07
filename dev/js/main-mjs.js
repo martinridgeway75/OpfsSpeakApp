@@ -6,7 +6,7 @@ let appEditor = {};
 //DB COMS
 
 function deleteRecordsViaMap(checkedRecords) {
-    const ctx = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid;
+    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const updates = {};
 
     checkedRecords.forEach( function (el) {
@@ -26,7 +26,7 @@ function deleteRecordsViaMap(checkedRecords) {
     });
 }
 function fetchSingleRecordForDownload(recordKey, elId) {
-    const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/records/" + recordKey;
+    const path = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid + "/records/" + recordKey;
 
     onValue(ref(db, path), (snapshot) => {
         const recordObj = snapshot.val();
@@ -42,7 +42,7 @@ function fetchSingleRecordForDownload(recordKey, elId) {
     });
 }
 function fetchSelectedRecordsForDownload(checkedRecords, elId) { //promises!
-    const ctx = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid;
+    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const len = checkedRecords.length;
     let pdfObjArr = [];
     let path;
@@ -72,7 +72,7 @@ function fetchSelectedRecordsForDownload(checkedRecords, elId) { //promises!
     });
 }
 function saveUpdatedRecords() { //@db...only records for the current temp student are being updated
-    const ctx = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid;
+    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const updates = {};
     let recordIdxPath;
     let recordPath;
@@ -174,7 +174,7 @@ function saveUpdatedRecords() { //@db...only records for the current temp studen
 //     });
 // }
 function getRecordsIndexFromDb() {
-    const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/recordsIndex";
+    const path = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid + "/recordsIndex";
 
     onValue(ref(db, path), (snapshot) => {
         const flatRec = flattenRecords(snapshot.val());
@@ -193,7 +193,7 @@ function getRecordsIndexFromDb() {
     });
 }
 function pushRecordsToDb(dataObj) {
-    const ctx = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid;
+    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const postData = { timeStamp: dataObj.timeStamp, context: dataObj.context, studentData: dataObj.studentData };
     const objPath = ctx + "/recordsIndex/";
     const newPostKey = push(child(ref(db), objPath)).key;
@@ -217,7 +217,7 @@ function pushRecordsToDb(dataObj) {
     });
 }
 function getRecordsIndexFromDbAtInit() {
-    const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/recordsIndex";
+    const path = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid + "/recordsIndex";
     
     onValue(ref(db, path), (snapshot) => {
         const flatRec = flattenRecords(snapshot.val());
@@ -270,7 +270,7 @@ function buildTempRecords() { //referring to the student loaded into: appEditor.
     if (len === 0) { noRecordsSelected(); return; }
 
     elsChkd.forEach(function (el) {
-        path = "" + appEditor.settings.dbCtx + "/" + uid + "/records/" + el.recordKey;
+        path = "" + /*appEditor.settings.dbCtx*/ + "/" + uid + "/records/" + el.recordKey;
 
         onValue(ref(db, path), (snapshot) => {
             const fullRecord = snapshot.val();
@@ -1525,8 +1525,6 @@ function showEditRecords() {
 function showEditRubric() {
     if (appEditor.db.rubrics === false) {
         getRubricIndexesFromDb();
-    } else if (appEditor.db.rubricsShared === false) {
-        getRubricSharedIndexesFromDb(); //only to fire in the case rubrics were fetched (as a dependency), but rubric editing never initiated
     }
     docEl("titleHeader").textContent = "Rubrics";
     showEl("editRubric");
@@ -3543,7 +3541,7 @@ function populateFullRubric() {
     }
     container.appendChild(frag);
 }
-function createAvailableRubriksButtons(rubrikNameKey, bool) {
+function createAvailableRubriksButtons(rubrikNameKey) {
     var container = docEl("ruLoadChkBoxes"); //fieldset
     var frag = document.createDocumentFragment();
     var newInput = document.createElement("input");
@@ -3554,15 +3552,8 @@ function createAvailableRubriksButtons(rubrikNameKey, bool) {
     newInput.name = "scalor";
     newInput.type = "radio";
     newLabel.htmlFor = "ruSelect_" + rubrikNameKey;
+    newLabel.textContent = appEditor.rubricsIndex[rubrikNameKey].rubricName;
 
-    if (bool !== true) {
-        newInput.dataset.share = true;
-        newLabel.className = "shared";
-        newLabel.textContent = appEditor.sharedRubricsIndex[rubrikNameKey].rubricName + " (shared)";
-        newLabel.style.color = "#337ab7";
-    } else {
-        newLabel.textContent = appEditor.rubricsIndex[rubrikNameKey].rubricName;
-    }
     frag.appendChild(newInput);
     frag.appendChild(newLabel);
     container.appendChild(frag);
@@ -3621,7 +3612,7 @@ function makeZipAndDl(resultArr, elId) {
 // INIT
 
 function initSuccess() {
-    const msg = "Hello " + appEditor.settings.userName + "!";
+    const msg = "Hello !";
     splashScreen(false, msg);
 
     docEl("mainMenu").addEventListener("click", oneClickAndRemoveHandler, {capture:false, passive: true});
@@ -3652,10 +3643,6 @@ function splashScreen(isSignedOut, msg) {
 
 //TODO: who is the user?
 function resetAppEditor(pNym, ctx) {
-    appEditor.settings = {
-        userName: pNym, 
-        dbCtx: ctx
-    },  
     appEditor.editorIsOpen = { record: false, rubric: false, grader: false },
     appEditor.db = { records: false, rubrics: false, students: false, snippets: false },
     appEditor.recordsIndex = [],
@@ -3664,7 +3651,6 @@ function resetAppEditor(pNym, ctx) {
     appEditor.table_lookup = {},
     appEditor.tableObj = {},
     appEditor.rubricsIndex = {},
-    appEditor.sharedRubricsIndex = {},
     appEditor.snippets = [],
     appEditor.appEditRecords = {
         tempStudent: { stId: "", stNme: "", stCls: "" },
