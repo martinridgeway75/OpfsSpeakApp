@@ -106,7 +106,6 @@ function hasSetNewRubric(msg) {
 //RUBRICS
 
 function commitRubrik() {
-    var uid = auth.currentUser.uid;
     var chkd = allChksPassForNewRubrik();
     var rubricKey = docEl("ruNameNewtxt").value;
     var relevantKey;
@@ -119,7 +118,7 @@ function commitRubrik() {
     disableEl("editRubric");
 
     if (appEditor.appEditRecords.loadedRubric[0] == undefined) {
-        rubricSaveAsNew(rubricKey, uid); //undefined if this is a new rubric...
+        rubricSaveAsNew(rubricKey); //undefined if this is a new rubric...
         return;
     }
     relevantKey = appEditor.appEditRecords.loadedRubric[0].rubricKey;
@@ -129,11 +128,11 @@ function commitRubrik() {
         okText: 'Update this rubric',
         cancelText: 'Save as new rubric',
         onOk: function () {
-            rubricUpdateExisting(rubricKey, relevantKey, uid);
+            rubricUpdateExisting(rubricKey, relevantKey);
         },
         onCancel: function () {
             rubricKey += "-" + window.Date.now();
-            rubricSaveAsNew(rubricKey, uid);
+            rubricSaveAsNew(rubricKey);
         }
     });
 }
