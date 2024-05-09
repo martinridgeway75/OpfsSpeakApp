@@ -28,42 +28,56 @@ function hitDb(obj, worker, callBack) {
 }
 
 /********************/
-
-//getSelectedRubric();
-//hitDb({ fileName: "rubricsIdx", subDir: { path: "rubrics", fileUidsArr: ["","",""] } }, "read", hasFetchedRubric); //expect [] || undefined
-
-function getRubricIndexesFromDb() {
-    hitDb({ fileName: "rubricsIdx" }, "read", hasFetchedRubricIdx); //expects {} || undefined
+//@grader
+function getSelectedRubric(key) {
+    hitDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }, "read", hasFetchedRubric); //expect [] || undefined
 }
-
-// rubricUpdateExisting();
-// rubricSaveAsNew();
-//hitDb({ obj: {}, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: {}, fileUid: "" }}, "write", hasSetRubrics); //expect <String> e || "OK"
-
+//@records
+function getSelectedRubrik(key){
+    hitDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }, "read", hasFetchedRubrik); //expect [] || undefined
+}
+function getRubricIndexesFromDb() {
+    hitDb({ fileName: "rubricsIdx" }, "read", hasFetchedRubricIdx); //expect {} || undefined
+}
 function removeRubrikFromDb(key) {
     delete appEditor.rubricsIndex[key];
-    hitDb({ obj: appEditor.rubricsIndex, fileName: "recordsIdx", subDir: { path: "rubrics", fileUidsArr: [key] }}, "delete", hasRemovedRubric);  //expect [Uuid] || []
+    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", fileUidsArr: [key] }}, "delete", hasRemovedRubric);  //expect [Uuid] || []
 }
+function rubricSaveAsNew(key) {
+    const postData = convertToRubricObj(key);
+    const newPostKey = crypto.randomUUID();
+    const idxObj = idxObjFromRubricPostData(postData);
 
+    rubricCommitted(newPostKey, idxObj); //update appEditor.rubricsIndex before hitting the db
+    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
+}
+function rubricUpdateExisting(key, relevantKey) {
+    const postData = convertToRubricObj(key);
+    const idxObj = idxObjFromRubricPostData(postData);
+
+    rubricCommitted(relevantKey, idxObj); //update appEditor.rubricsIndex before hitting the db
+    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
+}
 
 /*********callbacks***********/
 
-
+//@grader
 function hasFetchedRubric(data) {
-
-    //TODO: rubric {} to be placed in a single [] ?
-
-    // appEditor.snippets = data || {}; //onerror, data will be undefined
-    // initSnippets();
-
-    // if (!appEditor.db.snippets) {
-    //     snippetHandlersOn();
-    //     appEditor.db.snippets = true;
-    // }  
+    appEditor.grader.loadedRubric = data; // [{}]
+    showSectionsForSelectedRubric(Object.keys(data)[0]);
+    finishInit();
+    // (error) => { displayMsg("y", error);
 }
-
+//@records
+function hasFetchedRubrik(data) {
+    if (!data.length) { return; }
+    
+    appEditor.appEditRecords.loadedRubric = data; // [{}]
+    appEditor.appEditRecords.loadedRubric[0].rubricKey = Object.keys(data)[0];
+    showLoadedRubrik();
+}
 function hasFetchedRubricIdx(data) {
-    appEditor.rubricsIndex = data || {}; //onerror, data will be undefined
+    appEditor.rubricsIndex = data[0] || {}; //onerror, data will be undefined
 
     if (!appEditor.db.rubrics) {
         rubrikHandlersOn();
@@ -74,114 +88,27 @@ function hasFetchedRubricIdx(data) {
         loadRubriks();
     }
 }
-
-
-function hasSetRubrics(msg) { //TODO: callback of hitDb...was formerly: ()
-    // if (msg === "OK") {
-    //     exitSnippets();
-    //     displayMsg("b");
-    //     return;
-    // }
-    // displayMsg("a", msg);
-}
-
 function hasRemovedRubric(key) { //expect [Uuid] || []
     if (!key.length) { return; }
 
     rubrikDestroyed(key[0]);
 }
+function hasSetNewRubric(msg) {
+    if (msg === "OK") { return; }
 
+    displayMsg("d", msg);
+    enableEl("editRubric");
+}
 
 /*************************/
 
-function rubricSaveAsNew(rubricName, uid) {
-    const dbCtx = "" + appEditor.settings.dbCtx;
-    const postData = convertToRubricObj(rubricName);
-    const objPath = dbCtx + "/" + uid + "/savedRubricsIndex/";
-    const newPostKey = push(child(ref(db), objPath)).key;
-    const idxObj = idxObjFromRubricPostData(postData);
-    const newObjKeyPath = dbCtx + "/" + uid + "/savedRubrics/" + newPostKey;
-    const objIdxPath = dbCtx + "/" + uid + "/savedRubricsIndex/" + newPostKey;
-    const updates = {};
-
-    updates[newObjKeyPath] = postData;
-    updates[objIdxPath] = idxObj;
-
-    update(ref(db), updates).then(() => {
-        rubricCommitted(newPostKey, idxObj);
-    }).catch((error) => {
-        chkPermission(error);
-        displayMsg("d", error);
-        enableEl("editRubric");
-    });
-}
-function rubricUpdateExisting(rubricName, key, uid) { //#1. Rubric exists and needs to be updated
-    const dbCtx = "" + appEditor.settings.dbCtx;
-    const postData = convertToRubricObj(rubricName);
-    const idxObj = idxObjFromRubricPostData(postData);
-    const newObjKeyPath = dbCtx + "/" + uid + "/savedRubrics/" + key;
-    const objIdxPath = dbCtx + "/" + uid + "/savedRubricsIndex/" + key;
-    const updates = {};
-
-    updates[objIdxPath] = idxObj;
-    updates[newObjKeyPath] = postData;
-
-    update(ref(db), updates).then(() => {
-        rubricCommitted(key, idxObj);
-    }).catch((error) => {
-        chkPermission(error);
-        displayMsg("d", error);
-        enableEl("editRubric");
-    });
-}
-
-
-//@grader
-function getSelectedRubric(idx) {
-    const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubrics/" + idx;
-    
-    onValue(ref(db, path), (snapshot) => {
-        appEditor.grader.loadedRubric = [];
-        appEditor.grader.loadedRubric.push(snapshot.val());
-        showSectionsForSelectedRubric(idx);
-        finishInit();
-    }, (error) => {
-        chkPermission(error);
-        displayMsg("y", error);
-    }, {
-        onlyOnce: true
-    });
-}
-//@records
-function getSelectedRubrik(rubricNameKey) {
-    if (rubricNameKey === "" || rubricNameKey == undefined) { displayMsg("f"); return; }
-
-    const uid = auth.currentUser.uid;    
-    let selectedRubik;
-    let path = "" + appEditor.settings.dbCtx + "/" + uid + "/savedRubrics/" + rubricNameKey;
-
-    onValue(ref(db, path), (snapshot) => {
-        selectedRubik = snapshot.val();
-
-        if (selectedRubik !== null) {
-            appEditor.appEditRecords.loadedRubric = [];
-            appEditor.appEditRecords.loadedRubric.push(selectedRubik);
-            appEditor.appEditRecords.loadedRubric[0].rubricKey = rubricNameKey;
-            showLoadedRubrik();
-        }
-    }, (error) => {
-        chkPermission(error);
-    }, {
-        onlyOnce: true
-    });
-}
 
 //RUBRICS
 
 function commitRubrik() {
     var uid = auth.currentUser.uid;
     var chkd = allChksPassForNewRubrik();
-    var rubricName = docEl("ruNameNewtxt").value;
+    var rubricKey = docEl("ruNameNewtxt").value;
     var relevantKey;
 
     if (appEditor.editorIsOpen.rubric === false) { return; }
@@ -192,7 +119,7 @@ function commitRubrik() {
     disableEl("editRubric");
 
     if (appEditor.appEditRecords.loadedRubric[0] == undefined) {
-        rubricSaveAsNew(rubricName, uid); //undefined if this is a new rubric...
+        rubricSaveAsNew(rubricKey, uid); //undefined if this is a new rubric...
         return;
     }
     relevantKey = appEditor.appEditRecords.loadedRubric[0].rubricKey;
@@ -202,11 +129,11 @@ function commitRubrik() {
         okText: 'Update this rubric',
         cancelText: 'Save as new rubric',
         onOk: function () {
-            rubricUpdateExisting(rubricName, relevantKey, uid);
+            rubricUpdateExisting(rubricKey, relevantKey, uid);
         },
         onCancel: function () {
-            rubricName += "-" + window.Date.now();
-            rubricSaveAsNew(rubricName, uid);
+            rubricKey += "-" + window.Date.now();
+            rubricSaveAsNew(rubricKey, uid);
         }
     });
 }
@@ -904,16 +831,16 @@ function fixLoadedRubrikDupSections(allSectionNames) {
 }
 function selectLoadedRubrik() {
     var allRubrikBtns = document.getElementsByName('scalor');
-    var rubricNameKey,
+    var rubricKey,
         i;
 
     for (i = 0; i < allRubrikBtns.length; i++) {
         if (allRubrikBtns[i].checked) {
-            rubricNameKey = allRubrikBtns[i].value;
+            rubricKey = allRubrikBtns[i].value;
             break;
         }
     }
-    getSelectedRubrik(rubricNameKey);
+    getSelectedRubrik(rubricKey);
 }
 function showLoadedRubrik() {
     var rubrikKeys = [];

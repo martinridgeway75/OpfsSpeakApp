@@ -1916,14 +1916,14 @@ function showSectionsForSelectedRubric(idx) {
         showEl("gaSctnBoxes");
         return;
     }
-    if (docEl("gr" + idx).checked === true) {
-        appEditor.grader.noRubricCommentsOnly = false;
-        appEditor.grader.rubricFilter = [];
-        appEditor.grader.rubricFilter = JSON.parse(JSON.stringify(appEditor.grader.loadedRubric[0].rubricDef)); //.slice()
-        appEditor.grader.tempRecord.rubricRef = "" + appEditor.grader.loadedRubric[0].rubricName;
-        setUpChkbxSections(true);
-        showEl("gaSctnBoxes");
-    }
+    if (docEl("gr" + idx).checked !== true) { return; }
+   
+    appEditor.grader.noRubricCommentsOnly = false;
+    appEditor.grader.rubricFilter = [];
+    appEditor.grader.rubricFilter = JSON.parse(JSON.stringify(appEditor.grader.loadedRubric[0].rubricDef)); //.slice()
+    appEditor.grader.tempRecord.rubricRef = "" + appEditor.grader.loadedRubric[0].rubricName;
+    setUpChkbxSections(true);
+    showEl("gaSctnBoxes");
 }
 function identifyGradingSelectopt(el) {
     if (el.target !== el.currentTarget) {
