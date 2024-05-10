@@ -36,16 +36,6 @@ function frag_createStudentEl(studentIndex, referenceObj) {
     newTr.appendChild(newTd4);
     return newTr;
 }
-
-//main: 
-function createSnippetEl(objIndex, snptIndex, txt) {
-    let container = docEl("snptsTbd");
-    let frag = document.createDocumentFragment();
-    let content = frag_createSnippetEl(objIndex, snptIndex, txt);
-
-    frag.appendChild(content);
-    container.appendChild(frag);
-}
 function frag_createSnippetEl(objIndex, snptIndex, txt) {
     var newDiv1 = document.createElement("div");
     var newDiv3 = document.createElement("div");
@@ -344,38 +334,6 @@ function frag_createFinalRecordSectionEl(recordIndex, sectionName, sectionIndex)
     newDiv0.appendChild(newTable);
     return newDiv0;
 }
-function frag_createFinalRecordCriteriasEl(recordIndex, sectionIndex, allCriterias, fdbck, comments) { //creates one row (tr) for each criteria of a section
-    var allCriteriasLength = allCriterias.length;
-    var newTr2 = document.createElement("tr"); //the section comment...
-    var newTd6 = document.createElement("td");
-    var newTd7 = document.createElement("td");
-    var i,
-        ii,
-        tableRow,
-        criteriaId,
-        criteria,
-        criteriaRange,
-        scoreRange;
-
-    for (i = 0; i < allCriteriasLength; i++) {
-        criteriaId = "ff" + recordIndex + "-" + sectionIndex + "-" + i + "-";
-        criteria = allCriterias[i];
-        criteriaRange = fdbck.sectionDef[i].criteriaDef;
-        scoreRange = criteriaRange.map( function(el) { return el.score; });
-
-        tableRow = frag_createFinalRecordCriteriasElTr(i, criteriaId, criteria, scoreRange);
-        frag.appendChild(tableRow);
-    }
-    newTd6.textContent = "Comment:";
-    newTd7.id = "opt3_" + recordIndex + "_" + sectionIndex;
-    newTd7.contentEditable = "true";
-    newTd7.textContent = appEditor.appEditRecords.tempStudentRecords[recordIndex].comments[sectionIndex];
-    newTd7.colSpan = "3";
-    newTr2.appendChild(newTd6);
-    newTr2.appendChild(newTd7);
-    frag.appendChild(newTr2);
-    return frag;
-}
 function frag_createFinalRecordCriteriasElTr(i, criteriaId, criteria, scoreRange) {
     var newTr = document.createElement("tr");
     var newTd1 = document.createElement("td");
@@ -413,114 +371,51 @@ function frag_createFinalRecordCriteriasElTr(i, criteriaId, criteria, scoreRange
     newTr.appendChild(newTd4);
     return newTr;
 }
+function frag_createFinalRecordCriteriasEl(recordIndex, sectionIndex, allCriterias, fdbck, comments) { //creates one row (tr) for each criteria of a section
+    var allCriteriasLength = allCriterias.length;
+    var newTr2 = document.createElement("tr"); //the section comment...
+    var newTd6 = document.createElement("td");
+    var newTd7 = document.createElement("td");
+    var i,
+        ii,
+        tableRow,
+        criteriaId,
+        criteria,
+        criteriaRange,
+        scoreRange;
 
+    for (i = 0; i < allCriteriasLength; i++) {
+        criteriaId = "ff" + recordIndex + "-" + sectionIndex + "-" + i + "-";
+        criteria = allCriterias[i];
+        criteriaRange = fdbck.sectionDef[i].criteriaDef;
+        scoreRange = criteriaRange.map( function(el) { return el.score; });
 
-
-
-
-
-
-
-
-
-
-
-
-function frag_buildStudentgMap() {
-    var clsses = allgClasses();
-    var frag = document.createDocumentFragment();
-    var container = docEl("mgap");
-    var stdnts,
-        i,
-        ii;
-
-    emptyContent(container);
-
-    for (i = 0; i < clsses.length; i++) {
-        var newDiv1 = document.createElement("div");
-        var newDiv2 = document.createElement("div");
-
-        newDiv1.id = "gh" + i;
-        newDiv1.textContent = "Class: " + clsses[i];
-        newDiv1.className = "mapClass";
-        stdnts = getgCandidatesByClass(clsses[i]);
-
-        for (ii = 0; ii < stdnts.length; ii++) {
-            var newBtn1 = document.createElement("div");
-
-            newBtn1.id = "gy" + i + "-" + ii;
-            newBtn1.dataset.cls = clsses[i];
-            newBtn1.dataset.sid = stdnts[ii][0];
-            newBtn1.dataset.nme = stdnts[ii][1];
-            newBtn1.className = "btn btn-sm btn-inline btn-default";
-            newBtn1.style.margin = 1 + "px";
-            newBtn1.textContent = stdnts[ii][0] + " " + stdnts[ii][1];
-            newDiv2.appendChild(newBtn1);
-        }
-        newDiv2.id = "gb" + i;
-        frag.appendChild(newDiv1);
-        frag.appendChild(newDiv2);
+        tableRow = frag_createFinalRecordCriteriasElTr(i, criteriaId, criteria, scoreRange);
+        frag.appendChild(tableRow);
     }
-    container.appendChild(frag);
+    newTd6.textContent = "Comment:";
+    newTd7.id = "opt3_" + recordIndex + "_" + sectionIndex;
+    newTd7.contentEditable = "true";
+    newTd7.textContent = appEditor.appEditRecords.tempStudentRecords[recordIndex].comments[sectionIndex];
+    newTd7.colSpan = "3";
+    newTr2.appendChild(newTd6);
+    newTr2.appendChild(newTd7);
+    frag.appendChild(newTr2);
+    return frag;
 }
+function frag_buildStudentgMapNewBtn(clss, stdnt0, stdnt1) {
+    let newBtn1 = document.createElement("div");
 
-
-
-
-
-
-function frag_populateAllgClassesSelectBox() {
-    var clsses = allgClasses();
-    var selectId = docEl("chooseClass");
-    var frag = document.createDocumentFragment();
-    var newOpt0 = document.createElement("option");
-    var i;
-
-    newOpt0.value = "";
-    newOpt0.textContent = "Class";
-    frag.appendChild(newOpt0);
-
-    for (i = 0; i < clsses.length; i++) {
-        var newOpt1 = document.createElement("option");
-
-        newOpt1.value = clsses[i];
-        newOpt1.textContent = clsses[i];
-        frag.appendChild(newOpt1);
-    }
-    emptyContent(selectId);
-    selectId.appendChild(frag);
-    selectId.firstChild.setAttribute("disabled", true);
-    selectId.firstChild.setAttribute("selected", true);
-}
-function frag_populateStudentsByClass(clss, bool) {
-    var stdnts = getgCandidatesByClass(clss);
-    var selectId = docEl("chooseId");
-    var frag = document.createDocumentFragment();
-    var newOpt0 = document.createElement("option");
-    var i;
-
-    newOpt0.value = "";
-    newOpt0.dataset.nme = "";
-    newOpt0.textContent = "Student";
-    frag.appendChild(newOpt0);
-
-    for (i = 0; i < stdnts.length; i++) {
-        var newOpt1 = document.createElement("option");
-
-        newOpt1.value = stdnts[i][0];
-        newOpt1.dataset.nme = stdnts[i][1];
-        newOpt1.textContent = stdnts[i][0] + " " + stdnts[i][1];
-        frag.appendChild(newOpt1);
-    }
-    emptyContent(selectId);
-    selectId.appendChild(frag);
-    selectId.firstChild.setAttribute("disabled", true);
-
-    if (bool === false) { selectId.firstChild.setAttribute("selected", true); }
+    newBtn1.id = "gy" + i + "-" + ii;
+    newBtn1.dataset.cls = clss;
+    newBtn1.dataset.sid = stdnt0;
+    newBtn1.dataset.nme = stdnt1;
+    newBtn1.className = "btn btn-sm btn-inline btn-default";
+    newBtn1.style.margin = 1 + "px";
+    newBtn1.textContent = stdnt0 + " " + stdnt1;
+    return newBtn1;
 }
 function frag_createGradingSnippetEl(snippetIndex, txt) {
-    var container = docEl("snpptgContainer");
-    var frag = document.createDocumentFragment();
     var newDiv1 = document.createElement("div");
     var newDiv2 = document.createElement("div");
     var newTr = document.createElement("tr");
@@ -554,158 +449,77 @@ function frag_createGradingSnippetEl(snippetIndex, txt) {
     newTr.appendChild(newTd1);
     newTr.appendChild(newTd2);
     newTr.appendChild(newTd3);
-    frag.appendChild(newTr);
-    container.appendChild(frag);
-
-    createTagsForSnippets(snippetIndex);
+    return newTr;
 }
-function frag_createGradingRubriksButtons(rubrikKey, rubrikName) {
-    var container = docEl("gaLoadChkBoxes"); //fieldset
-    var frag = document.createDocumentFragment();
-    var newInput = document.createElement("input");
-    var newLabel = document.createElement("label");
+function frag_setUpChkbxSections(i, sectionName) {
+    var newDiv1 = document.createElement("div");
+    var newDiv2 = document.createElement("div");
+    var gnumDiv = document.createElement("div");
+    var newInput1 = document.createElement("input");
+    var newLabel1 = document.createElement("label");
+    var newSpan1 = document.createElement("span");
 
-    newInput.id = "gr" + rubrikKey;
-    newInput.value = rubrikName;
-    newInput.name = "scalot";
-    newInput.type = "radio";
-    newLabel.htmlFor = "gr" + rubrikKey;
-    newLabel.textContent = rubrikName;
-
-    frag.appendChild(newInput);
-    frag.appendChild(newLabel);
-    container.appendChild(frag);
+    newDiv2.className = "squaredFour";
+    gnumDiv.id = "gs" + i;
+    gnumDiv.className = "helperNum";
+    newInput1.type = "checkbox";
+    newInput1.id = "gw" + (i+1);
+    newInput1.value = i;
+    newInput1.checked = false;
+    newLabel1.htmlFor = "gw" + (i+1);
+    newSpan1.textContent = sectionName;
+    newDiv1.appendChild(gnumDiv);
+    newDiv2.appendChild(newInput1);
+    newDiv2.appendChild(newLabel1);
+    newDiv1.appendChild(newDiv2);
+    newDiv1.appendChild(newSpan1);
+    return newDiv1;
 }
-function frag_createNoRubricGradingRubrikButton() {
-    var container = docEl("gaLoadChkBoxes"); //fieldset
-    var frag = document.createDocumentFragment();
-    var newInput = document.createElement("input");
-    var newLabel = document.createElement("label");
+function frag_createGradingCriteriasEl(sectionIndex, i, criteria) { //creates one row (tr) for each criteria of a section
+    const criteriaId = "gf" + sectionIndex + "-" + i + "-";
+    const criteriaRange = criteria.criteriaDef;
+    const scoreRange = criteriaRange.map( function(el) { return el.score; }).sort( function(a,b){ return a < b; });
+    const scoreRangeLen = scoreRange.length;
+    const maxScore = scoreRange[scoreRangeLen - 1];
+    let newTr = document.createElement("tr");
+    let newTd1 = document.createElement("td");
+    let newTd2 = document.createElement("td");
+    let newTd3 = document.createElement("td");
+    let newTd4 = document.createElement("td");
+    let newDiv2 = document.createElement("div");
+    let newSelect1 = document.createElement("select");
+    let newFirstOpt = document.createElement("option"); //placeholder @selectedIndex = 0
 
-    newInput.id = "_sanz_rubrik";
-    newInput.value = "No rubric";
-    newInput.name = "scalot";
-    newInput.type = "radio";
-    newLabel.htmlFor = "_sanz_rubrik";
-    newLabel.textContent = "No rubric";
+    newTd1.id = criteriaId + "0";
+    newTd1.textContent = criteria.criteriaName;
+    newDiv2.className = "selectScore select-styleO";
+    newSelect1.id = criteriaId + "1";
+    newFirstOpt.value = "";
+    newFirstOpt.textContent = "-";
+    newFirstOpt.selected = true;
+    newSelect1.appendChild(newFirstOpt);
 
-    frag.appendChild(newInput);
-    frag.appendChild(newLabel);
-    container.appendChild(frag);
-}
-function frag_setUpChkbxSections(bool) {
-    var frag,
-        allSectionNames,
-        i;
+    for (ii = 0; ii < scoreRangeLen; ii++) {
+        let newOpt = document.createElement("option");
 
-    docEl("gaSctnTextHelper").textContent = "";
-    emptyContent(docEl('gaCbContainer'));
-
-    if (bool !== true) { return; }
-
-    frag = document.createDocumentFragment();
-    allSectionNames = getSectionNames(appEditor.grader.rubricFilter);
-
-    for (i = 0; i < allSectionNames.length; i++) {
-        var newDiv1 = document.createElement("div");
-        var newDiv2 = document.createElement("div");
-        var gnumDiv = document.createElement("div");
-        var newInput1 = document.createElement("input");
-        var newLabel1 = document.createElement("label");
-        var newSpan1 = document.createElement("span");
-
-        newDiv2.className = "squaredFour";
-        gnumDiv.id = "gs" + i;
-        gnumDiv.className = "helperNum";
-        newInput1.type = "checkbox";
-        newInput1.id = "gw" + (i+1);
-        newInput1.value = i;
-        newInput1.checked = false;
-        newLabel1.htmlFor = "gw" + (i+1);
-        newSpan1.textContent = allSectionNames[i];
-        newDiv1.appendChild(gnumDiv);
-        newDiv2.appendChild(newInput1);
-        newDiv2.appendChild(newLabel1);
-        newDiv1.appendChild(newDiv2);
-        newDiv1.appendChild(newSpan1);
-        frag.appendChild(newDiv1);
+        newOpt.value = scoreRange[ii];
+        newOpt.textContent = scoreRange[ii];
+        newSelect1.appendChild(newOpt);
     }
-    docEl("gaSctnTextHelper").textContent = "...and the sections to use (in order):";
-    docEl('gaCbContainer').appendChild(frag);
-}
-function frag_createGradingCriteriasEl(sectionIndex) { //creates one row (tr) for each criteria of a section
-    var container = docEl("gf" + sectionIndex);
-    var frag = document.createDocumentFragment();
-    var allCriterias = appEditor.grader.rubric[sectionIndex].sectionDef;
-    var allCriteriasLength = allCriterias.length;
-    var newTr2 = document.createElement("tr"); //the section comment...
-    var newTd6 = document.createElement("td");
-    var newTd7 = document.createElement("td");
-    var newPasteSpan = document.createElement("span");
-    var i,
-        ii;
+    newTd3.id = criteriaId + "2";
+    newTd3.textContent = maxScore;
+    newTd4.id = criteriaId + "3";
+    newTd4.textContent = ""; //default @ newOpt.selected
 
-    for (i = 0; i < allCriteriasLength; i++) {
-        var newTr = document.createElement("tr");
-        var newTd1 = document.createElement("td");
-        var newTd2 = document.createElement("td");
-        var newTd3 = document.createElement("td");
-        var newTd4 = document.createElement("td");
-        var criteriaId = "gf" + sectionIndex + "-" + i + "-";
-        var newDiv2 = document.createElement("div");
-        var newSelect1 = document.createElement("select");
-        var criteriaRange = allCriterias[i].criteriaDef;
-        var scoreRange = criteriaRange.map( function(el) { return el.score; }).sort( function(a,b){ return a < b; });
-        var scoreRangeLen = scoreRange.length;
-        var maxScore = scoreRange[scoreRangeLen - 1];
-        var newFirstOpt = document.createElement("option"); //placeholder @selectedIndex = 0
-
-        newTd1.id = criteriaId + "0";
-        newTd1.textContent = allCriterias[i].criteriaName;
-        newDiv2.className = "selectScore select-styleO";
-        newSelect1.id = criteriaId + "1";
-        newFirstOpt.value = "";
-        newFirstOpt.textContent = "-";
-        newFirstOpt.selected = true;
-        newSelect1.appendChild(newFirstOpt);
-
-        for (ii = 0; ii < scoreRangeLen; ii++) {
-            var newOpt = document.createElement("option");
-
-            newOpt.value = scoreRange[ii];
-            newOpt.textContent = scoreRange[ii];
-            newSelect1.appendChild(newOpt);
-        }
-        newTd3.id = criteriaId + "2";
-        newTd3.textContent = maxScore;
-        newTd4.id = criteriaId + "3";
-        newTd4.textContent = ""; //default @ newOpt.selected
-
-        newDiv2.appendChild(newSelect1);
-        newTd2.appendChild(newDiv2);
-        newTr.appendChild(newTd1);
-        newTr.appendChild(newTd2);
-        newTr.appendChild(newTd3);
-        newTr.appendChild(newTd4);
-        frag.appendChild(newTr);
-    }
-    newTd6.textContent = "Comment:";
-    newPasteSpan.id = "gp" + sectionIndex;
-    newPasteSpan.className = "icon-paste pasteBtn";
-    newTd7.id = "gk" + sectionIndex;
-    newTd7.contentEditable = "true";
-    newTd7.textContent = "";
-    newTd7.colSpan = "3";
-
-    newTd6.appendChild(newPasteSpan);
-    newTr2.appendChild(newTd6);
-    newTr2.appendChild(newTd7);
-    frag.appendChild(newTr2);
-    container.appendChild(frag);
+    newDiv2.appendChild(newSelect1);
+    newTd2.appendChild(newDiv2);
+    newTr.appendChild(newTd1);
+    newTr.appendChild(newTd2);
+    newTr.appendChild(newTd3);
+    newTr.appendChild(newTd4);
+    return newTr;
 }
 function frag_createSectionElTables(i) {
-    var container = docEl("gq" + i);
-    var frag = document.createDocumentFragment();
     var newTable = document.createElement("table");
     var newThead = document.createElement("thead");
     var newTr = document.createElement("tr");
@@ -735,159 +549,46 @@ function frag_createSectionElTables(i) {
     newThead.appendChild(newTr);
     newTable.appendChild(newThead);
     newTable.appendChild(newTbody);
-    frag.appendChild(newTable);
-    container.appendChild(frag);
+    return newTable;
 }
-function frag_createUISections() {
-    emptyContent(docEl('datgEntry'));
-    var i;
-    var frag = document.createDocumentFragment();
+function frag_createUISections(i, sectionName) {
+    var newDiv2 = document.createElement("div"); //locked section preview
+    var newDiv3 = document.createElement("div");
+    var newDiv4 = document.createElement("div");
+    var newDiv5 = document.createElement("div");
+    var newDiv6 = document.createElement("div");
+    var newDiv7 = document.createElement("div");
+    var newDiv5a = document.createElement("div");
+    var newDiv6a = document.createElement("div");
+    var newDiv15 = document.createElement("div");
+    var newDiv16 = document.createElement("div");
+    var newDiv17 = document.createElement("button"); //NOTE: changed to a button, from a div ...haven't checked if the change affects anything
 
-    for (i = 0; i < appEditor.grader.rubric.length; i++) { //each section wrapper
-        var newDiv2 = document.createElement("div"); //locked section preview
-        var newDiv3 = document.createElement("div");
-        var newDiv4 = document.createElement("div");
-        var newDiv5 = document.createElement("div");
-        var newDiv6 = document.createElement("div");
-        var newDiv7 = document.createElement("div");
-        var newDiv5a = document.createElement("div");
-        var newDiv6a = document.createElement("div");
-        var newDiv15 = document.createElement("div");
-        var newDiv16 = document.createElement("div");
-        var newDiv17 = document.createElement("div");
+    newDiv2.className = "row";
+    newDiv3.className = "col-lg-12 wrapTextPreline";
+    newDiv3.id = "gv" + i;
+    newDiv5.className = "row";
+    newDiv6.className = "col-lg-12 sectionLabel";
+    newDiv6.textContent = sectionName;
+    newDiv7.id = "gq" + i;
+    newDiv7.className = "row";
+    newDiv5a.className = "row";
+    newDiv6a.className = "col-lg-12";
+    newDiv15.className = "row";
+    newDiv16.className = "col-lg-12 text-center";
+    newDiv17.id = "gj" + i;
+    newDiv17.className = "btn btn-sm btn-primary commitBtn icon-lock-open";
+    newDiv17.textContent = "";
 
-        newDiv2.className = "row";
-        newDiv3.className = "col-lg-12 wrapTextPreline";
-        newDiv3.id = "gv" + i;
-        newDiv5.className = "row";
-        newDiv6.className = "col-lg-12 sectionLabel";
-        newDiv6.textContent = appEditor.grader.rubric[i].sectionName;
-        newDiv7.id = "gq" + i;
-        newDiv7.className = "row";
-        newDiv5a.className = "row";
-        newDiv6a.className = "col-lg-12";
-        newDiv15.className = "row";
-        newDiv16.className = "col-lg-12 text-center";
-
-        //TODO: want a button, not a div ...want to be able to tab onto this
-
-        newDiv17.id = "gj" + i;
-        newDiv17.className = "btn btn-sm btn-primary commitBtn icon-lock-open";
-        newDiv17.textContent = "";
-
-        newDiv5a.appendChild(newDiv6a);
-        newDiv5.appendChild(newDiv6);
-        newDiv4.appendChild(newDiv5);
-        newDiv4.appendChild(newDiv5a);
-        newDiv4.appendChild(newDiv7);
-        newDiv2.appendChild(newDiv3);
-        newDiv4.appendChild(newDiv2);
-        newDiv16.appendChild(newDiv17);
-        newDiv15.appendChild(newDiv16);
-        newDiv4.appendChild(newDiv15);
-        frag.appendChild(newDiv4);
-    }
-    docEl('datgEntry').appendChild(frag);
-}
-function frag_populateFullRubric() {
-    var numOfTables = appEditor.grader.rubric.length;
-    var container = docEl("gaFullRbContainer");
-    var frag = document.createDocumentFragment();
-    var numOfRows,
-        numOfCells,
-        i,
-        ii,
-        iii;
-
-    emptyContent(container);
-
-    for (i = 0; i < numOfTables; i++) {
-        var newTable = document.createElement("table");
-        var newThead = document.createElement("thead");
-        var newHeadTr = document.createElement("tr");
-        var newTbody = document.createElement("tbody");
-        var isRowStart;
-        var isFirstRow;
-        var isColStart;
-
-        newTable.className = "table table-responsive table-striped table-bordered table-condensed";
-        numOfRows = appEditor.grader.rubric[i].sectionDef.length;
-        isRowStart = true;
-        isFirstRow = true;
-
-        for (ii = 0; ii < numOfRows; ii++) { //header row
-            numOfCells = appEditor.grader.rubric[i].sectionDef[ii].criteriaDef.length;
-
-            for (iii = 0; iii < numOfCells; iii++) {
-                var newTh = document.createElement("th");
-
-                if (isFirstRow === true) { //define the first row
-                    if (isRowStart === true) {
-                        var newCol1Th = document.createElement("th");
-
-                        newCol1Th.textContent = appEditor.grader.rubric[i].sectionName;
-                        newHeadTr.appendChild(newCol1Th);
-                        isRowStart = false;
-                    }
-                    newTh.textContent = appEditor.grader.rubric[i].sectionDef[ii].criteriaDef[iii].score;
-                    newHeadTr.appendChild(newTh);
-                }
-            }
-            isFirstRow = false;
-        }
-        newThead.appendChild(newHeadTr);
-
-        for (ii = 0; ii < numOfRows; ii++) { //body
-            var newTr = document.createElement("tr");
-
-            numOfCells = appEditor.grader.rubric[i].sectionDef[ii].criteriaDef.length;
-            isColStart = true;
-
-            for (iii = 0; iii < numOfCells; iii++) {
-                var newTd = document.createElement("td");
-
-                if (isColStart === true) { //define the first cell (criteria name)
-                    var newCol1 = document.createElement("td");
-
-                    newCol1.textContent = appEditor.grader.rubric[i].sectionDef[ii].criteriaName;
-                    newTr.appendChild(newCol1);
-                    isColStart = false;
-                }
-                newTd.textContent = appEditor.grader.rubric[i].sectionDef[ii].criteriaDef[iii].descriptor;
-                newTr.appendChild(newTd);
-            }
-            newTbody.appendChild(newTr);
-        }
-        newTable.appendChild(newThead);
-        newTable.appendChild(newTbody);
-        frag.appendChild(newTable);
-    }
-    container.appendChild(frag);
-}
-function frag_createAvailableRubriksButtons(rubrikNameKey) {
-    var container = docEl("ruLoadChkBoxes"); //fieldset
-    var frag = document.createDocumentFragment();
-    var newInput = document.createElement("input");
-    var newLabel = document.createElement("label");
-
-    newInput.id = "ruSelect_" + rubrikNameKey;
-    newInput.value = rubrikNameKey;
-    newInput.name = "scalor";
-    newInput.type = "radio";
-    newLabel.htmlFor = "ruSelect_" + rubrikNameKey;
-    newLabel.textContent = appEditor.rubricsIndex[rubrikNameKey].rubricName;
-
-    frag.appendChild(newInput);
-    frag.appendChild(newLabel);
-    container.appendChild(frag);
-}
-function frag_createAvailableRubriksDivider() {
-    var container = docEl("ruLoadChkBoxes"); //fieldset
-    var frag = document.createDocumentFragment();
-    var newDiv0 = document.createElement("DIV");
-
-    newDiv0.className = "rubricsDivider";
-
-    frag.appendChild(newDiv0);
-    container.appendChild(frag);
+    newDiv5a.appendChild(newDiv6a);
+    newDiv5.appendChild(newDiv6);
+    newDiv4.appendChild(newDiv5);
+    newDiv4.appendChild(newDiv5a);
+    newDiv4.appendChild(newDiv7);
+    newDiv2.appendChild(newDiv3);
+    newDiv4.appendChild(newDiv2);
+    newDiv16.appendChild(newDiv17);
+    newDiv15.appendChild(newDiv16);
+    newDiv4.appendChild(newDiv15);
+    return newDiv4;
 }

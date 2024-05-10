@@ -27,14 +27,14 @@ function hitDb(obj, worker, callBack) {
     myWorker.postMessage(obj);
 }
 
-/********************/
-//Formerly: readStudentData();
-//hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expect [] || undefined
+function readStudentData(){
+    hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expect [] || undefined
+}
+function saveStudentData() {
+    hitDb({ obj: appEditor.studentData, fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
+}
 
-//Formerly: saveStudentData();
-//hitDb({ obj: appEditor.studentData, fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
-
-/********************/
+/*********callbacks***********/
 
 function hasFetchedStudentData(data) {
     appEditor.studentData = data || []; //onerror, data will be undefined
@@ -52,23 +52,6 @@ function hasSetStudentData(msg) {
     }
     displayMsg("a", msg);
 }
-function initStudentData() { //init
-    if (appEditor.studentData.length) {
-        appEditor.studentData = sortStudentData(appEditor.studentData);
-    }
-    reloadStudents(true);
-}
-
-// function saveStudentData() {
-//     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/studentData";
-
-//     set(ref(db, path), appEditor.studentData).then(() => {
-//         displayMsg("i");
-//         }).catch((error) => {
-//             chkPermission(error);
-//             displayMsg("a", error);
-//         });
-// }
 
 /*************************/
 
@@ -327,4 +310,10 @@ function resetStudents() { //Array.from?
     let allTargetNodes = docEl("editStudents_body").querySelectorAll("input");
 
     allTargetNodes.forEach(function (target) { target.value = ""; });
+}
+function initStudentData() { //init
+    if (appEditor.studentData.length) {
+        appEditor.studentData = sortStudentData(appEditor.studentData);
+    }
+    reloadStudents(true);
 }
