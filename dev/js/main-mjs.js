@@ -2542,524 +2542,68 @@ function createSpreadsheet(bool) {
 //DOM PUNCHING
 
 function createStudentEl(studentIndex, referenceObj) {
-    var container = document.getElementById("editStudents_body");
-    var frag = document.createDocumentFragment();
-    var newTr = document.createElement("tr");
-    var newTd1 = document.createElement("td");
-    var newTd2 = document.createElement("td");
-    var newTd3 = document.createElement("td");
-    var newTd4 = document.createElement("td");
-    var newSpan = document.createElement("span");
-    var newInput1 = document.createElement("input");
-    var newInput2 = document.createElement("input");
-    var newInput3 = document.createElement("input");
+    let container = document.getElementById("editStudents_body");
+    let frag = document.createDocumentFragment();
+    let content = frag_createStudentEl(studentIndex, referenceObj); //@domFrags
 
-    newTd1.className = "col-lg-4 col-md-4 col-sm-4 col-xs-4";
-    newTd2.className = "col-lg-4 col-md-4 col-sm-4 col-xs-4";
-    newTd3.className = "col-lg-4 col-md-4 col-sm-4 col-xs-4";
-    newInput1.id = "yc" + studentIndex;
-    newInput1.value = referenceObj.stCls;
-    newInput2.id = "yf" + studentIndex;
-    newInput2.value = referenceObj.stId;
-    newInput3.id = "yn" + studentIndex;
-    newInput3.value = referenceObj.stNme;
-    newTd4.className = "col-width30 text-center";
-    newSpan.id = "yd" + studentIndex;
-    newSpan.className = "btn btn-xs btn-danger";
-    newSpan.textContent = "\u2716";
-    newTr.id = "yt" + studentIndex;
-
-    newTd1.appendChild(newInput1);
-    newTd2.appendChild(newInput2);
-    newTd3.appendChild(newInput3);
-    newTd4.appendChild(newSpan);
-    newTr.appendChild(newTd1);
-    newTr.appendChild(newTd2);
-    newTr.appendChild(newTd3);
-    newTr.appendChild(newTd4);
-    frag.appendChild(newTr);
+    frag.appendChild(content);
     container.appendChild(frag);
 }
 function createSnippetEl(objIndex, snptIndex, txt) {
-    var container = docEl("snptsTbd");
-    var frag = document.createDocumentFragment();
-    var newDiv1 = document.createElement("div");
-    var newDiv3 = document.createElement("div");
-    var newTr = document.createElement("tr");
-    var newTd1 = document.createElement("td");
-    var newTd2 = document.createElement("td");
-    var newTd3 = document.createElement("td");
-    var newTd4 = document.createElement("td");
-    var newSpan2 = document.createElement("span");
-    var newSelect1 = document.createElement("select");
-    var newSelect2 = document.createElement("select");
-    var selectIid = "iu" + objIndex + "-" + snptIndex;
-    //index of obj in appEditor.snippets, index of the snippet within the array of snippets of the obj, the content of the snippet
-    newTr.id = "ii" + objIndex + "-" + snptIndex;
-    newTd1.className = "text-center";
-    newDiv1.className = "selectSnippet select-styleO";
-    newSelect1.id = selectIid;
-    //onchange Rubric dropdown: repopulate the Section select to show the corresponding sections for the rubric selected
-    newSelect1.onchange = function(){ fireUpdateSingleTagSnippetSection(selectIid); };
-    newTd2.className = "text-center";
-    newDiv3.className = "selectSnippet select-styleO";
-    newSelect2.id = "ia" + objIndex + "-" + snptIndex;
-    newTd3.id = "ix" + objIndex + "-" + snptIndex;
-    newTd3.contentEditable = "true";
-    newTd3.textContent = txt;
-    newTd4.className = "col-width30 text-center";
-    newSpan2.id = "ie" + objIndex + "-"+ snptIndex;
-    newSpan2.className = "btn btn-xs btn-danger";
-    newSpan2.textContent = "\u2716";
+    let container = docEl("snptsTbd");
+    let frag = document.createDocumentFragment();
+    let content = frag_createSnippetEl(objIndex, snptIndex, txt); //@domFrags
 
-    newDiv1.appendChild(newSelect1);
-    newTd1.appendChild(newDiv1);
-    newDiv3.appendChild(newSelect2);
-    newTd2.appendChild(newDiv3);
-    newTd4.appendChild(newSpan2);
-    newTr.appendChild(newTd1);
-    newTr.appendChild(newTd2);
-    newTr.appendChild(newTd3);
-    newTr.appendChild(newTd4);
-    frag.appendChild(newTr);
-    container.appendChild(frag);
-}
-function buildRecordsMap() {
-    var clsses = allClasses();
-    var frag = document.createDocumentFragment();
-    var container = docEl("recordsMap");
-    var stdnts;
-    var aStdntRecords;
-    var i;
-    var ii;
-    var iii;
-
-    emptyContent(container);
-
-    for (i = 0; i < clsses.length; i++) {
-        var newDiv1 = document.createElement("div");
-        var newDiv2 = document.createElement("div");
-        var newTable1 = document.createElement("table");
-        var newTbody1 = document.createElement("tbody");
-        var newSpan0 = document.createElement("span");
-        var newDelSpan = document.createElement("span");
-        var newDlSpan = document.createElement("span");
-
-        newSpan0.id = "jq" + i;
-        newSpan0.className = "label label-md";
-        newSpan0.style.fontWeight = 400;
-        newSpan0.textContent = "Select all / none";
-        newDelSpan.id = "jz" + i;
-        newDelSpan.className = "btn btn-xs btn-dangerous destroyRecord pull-right";
-        newDelSpan.style.marginLeft = 5 + "px";
-        newDelSpan.textContent = "Delete selected";
-        newDlSpan.id = "jx" + i;
-        newDlSpan.className = "btn btn-xs btn-default pull-right";
-        newDlSpan.textContent = "Download selected";
-        newDlSpan.style.paddingLeft = 5 + "px";
-        newDlSpan.style.paddingRight = 5 + "px";
-        newDiv1.id = "jh" + i;
-        newDiv1.className = "mapClass";
-        newDiv1.textContent = "Class: " + clsses[i] + " ";
-        newDiv2.id = "jm" + i;
-        newTable1.className = "table small noBtmMargin";
-        newTbody1.id = "jb" + i;
-
-        stdnts = getCandidatesByClass(clsses[i]); //[["21526737","김채영"],["21526494","박주희"],...]
-
-        for (ii = 0; ii < stdnts.length; ii++) {
-            var newTr1 = document.createElement("tr");
-            var newTd1 = document.createElement("td");
-            var newDiv3 = document.createElement("div");
-
-            newDiv3.id = "jy" + i + "-" + ii;
-            newDiv3.dataset.cls = clsses[i];
-            newDiv3.dataset.sid = stdnts[ii][0];
-            newDiv3.dataset.nme = stdnts[ii][1];
-            newDiv3.className = "btn btn-sm btn-whiteBlue";
-            newDiv3.style.margin = 1 + "px";
-            newDiv3.textContent = "Edit";
-            newTr1.className = "striped";
-            newTd1.appendChild(newDiv3);
-            newTr1.appendChild(newTd1);
-
-            aStdntRecords = getOneSetOfRecords(stdnts[ii][0],stdnts[ii][1], clsses[i]); //id, name, class
-
-            if (!aStdntRecords.length) {
-                continue; //ignore unfound records...
-            } else {
-                var newTd3 = document.createElement("td");
-                var newSpan2 = document.createElement("span");
-
-                newSpan2.id = "jw" + i + "-" + ii;
-                newSpan2.dataset.cls = clsses[i];
-                newSpan2.dataset.sid = stdnts[ii][0];
-                newSpan2.dataset.nme = stdnts[ii][1];
-                newSpan2.className = "label label-md";
-                newSpan2.dataset.slct = "all";
-                newSpan2.textContent = stdnts[ii][0] + " " + stdnts[ii][1]; //"Select all"
-                newTd3.className = "tdSelectBtn";
-                newTd3.appendChild(newSpan2);
-                newTr1.appendChild(newTd3);
-
-                for (iii = 0; iii < aStdntRecords.length; iii++) { //i: is the class, ii: is the student, iii: is the record
-                    var recordDate = new Date(aStdntRecords[iii].timeStamp).toLocaleDateString();
-                    var newTd2 = document.createElement("td");
-                    var newDiv4 = document.createElement("div");
-                    var newInput1 = document.createElement("input");
-                    var newLabel1 = document.createElement("label");
-                    var newSpan1 = document.createElement("span");
-                    var recordId = "jk" + aStdntRecords[iii].recordKey;
-
-                    newDiv4.className = "squaredFour compacted";
-                    newInput1.type = "checkbox";
-                    newInput1.id = recordId;
-                    newInput1.className = "targeted";
-                    newLabel1.htmlFor = recordId;
-                    newSpan1.textContent = " " + aStdntRecords[iii].context + "\n" + recordDate;
-                    newDiv4.appendChild(newInput1);
-                    newDiv4.appendChild(newLabel1);
-                    newTd2.appendChild(newDiv4);
-                    newTd2.appendChild(newSpan1);
-                    newTr1.appendChild(newTd2);
-                }
-                newTbody1.appendChild(newTr1);
-            }
-        }
-        newDiv1.appendChild(newSpan0);
-        newDiv1.appendChild(newDelSpan);
-        newDiv1.appendChild(newDlSpan);
-        newTable1.appendChild(newTbody1);
-        newDiv2.appendChild(newTable1);
-        frag.appendChild(newDiv1);
-        frag.appendChild(newDiv2);
-    }
+    frag.appendChild(content);
     container.appendChild(frag);
 }
 function createFinalRecordElForNoRubric(recordIndex) {
-    var container = docEl("recordsContainer");
-    var frag = document.createDocumentFragment();
-    var newDiv1 = document.createElement("div");
-    var newDiv3 = document.createElement("div");
-    var newDiv4 = document.createElement("div");
-    var newDiv5 = document.createElement("div");
-    var newDiv6 = document.createElement("div");
-    var newDiv10 = document.createElement("div");
-    var newDiv11 = document.createElement("div");
-    var newDiv12 = document.createElement("div");
-    var newDiv13 = document.createElement("div");
-    var newDiv14 = document.createElement("div");
-    var newDiv15 = document.createElement("div");
-    var newDiv17 = document.createElement("div");
-    var newInput2 = document.createElement("input");
-    var newInput3 = document.createElement("input");
-    var newSpan4 = document.createElement("span");
-    var newInput1 = document.createElement("input");
-    var newSpan2 = document.createElement("span");
-    var newSpan3 = document.createElement("span");
-    var dateTime = new Date(appEditor.appEditRecords.tempStudentRecords[recordIndex].timeStamp).toLocaleString();
-    var newSpanRubric1 = document.createElement("span");
-    var newDivRubric1 = document.createElement("div");
-    var newDivRubric3 = document.createElement("div");
-    var newDivRubric4 = document.createElement("div");
-    var newDivRubric5 = document.createElement("div");
+    const record = appEditor.appEditRecords.tempStudentRecords[recordIndex];
+    const dateTime = new Date(record.timeStamp).toLocaleString();
+    const score = record.noRubricScore;
+    const ctx = record.context;
+    let container = docEl("recordsContainer");
+    let frag = document.createDocumentFragment();
+    let content1 = frag_createFinalRecordElForNoRubricPt1(recordIndex, dateTime, score, ctx); //@domFrags
+    let content2 = frag_createFinalRecordElForNoRubricPt2(recordIndex, dateTime, ctx); //@domFrags
 
-    newDiv14.className = "col-lg-3 col-md-3 col-sm-3 col-xs-6 fbkSection";
-    newDiv15.className = "feedbackLabel text-center";
-    newDiv15.textContent = "Score";
-    newDiv17.className = "text-center";
-    newInput2.type = "number";
-    newInput2.id = "ts" + recordIndex;
-    newInput2.className = "genTotalScore";
-    newInput2.value = appEditor.appEditRecords.tempStudentRecords[recordIndex].noRubricScore.scr;
-    newSpan4.textContent = " / ";
-    newInput3.type = "number";
-    newInput3.id = "tm" + recordIndex;
-    newInput3.className = "genTotalScore";
-    newInput3.value = appEditor.appEditRecords.tempStudentRecords[recordIndex].noRubricScore.max;
-    newDiv1.id = "fh" + recordIndex;
-    newDiv1.className = "row";
-    newDiv3.className = "col-lg-12 recordWrapper";
-    newDiv4.className = "row";
-    newDiv5.className = "col-lg-12";
-    newDiv6.id = "fuSection" + recordIndex;
-    newDiv10.className = "row";
-    newDiv10.style.marginLeft = 0;
-    newDiv10.style.marginRight = 0;
-    newDiv11.className = "col-lg-9 col-md-9 col-sm-9 fbkSection";
-    newDiv12.className = "feedbackLabel";
-    newDiv12.textContent = "General feedback";
-    newDiv13.id="opt1_" + recordIndex;
-    newDiv13.contentEditable = "true";
-    newDiv13.className = "fbkA commentBtnA";
-    newInput1.id = "fc" + recordIndex;
-    newInput1.className = "inputContext";
-    newInput1.value = appEditor.appEditRecords.tempStudentRecords[recordIndex].context;
-    newSpan2.textContent = dateTime;
-    newSpan2.className = "btn-xs pull-right";
-    newSpan3.id = "fx" + recordIndex + "-0";
-    newSpan3.className = "btn btn-xs btn-dangerous pull-right destroyRecord";
-    newSpan3.textContent = "Delete Record";
-    newDivRubric1.id = "fq" + recordIndex;
-    newDivRubric1.className = "row nodisplay";
-    newDivRubric3.className = "col-lg-12 recordWrapper";
-    newDivRubric4.className = "row text-center";
-    newDivRubric4.style.marginBottom = 5 + "px";
-    newDivRubric4.textContent = "Rubric for " + appEditor.appEditRecords.tempStudentRecords[recordIndex].context + " - " + dateTime + " ";
-    newDivRubric5.id = "frrA" + recordIndex;
-    newDivRubric5.className = "row small";
-    newSpanRubric1.id = "fw" + recordIndex;
-    newSpanRubric1.className = "btn btn-sm btn-default";
-    newSpanRubric1.textContent = "Back to record";
-
-    newDiv17.appendChild(newInput2);
-    newDiv17.appendChild(newSpan4);
-    newDiv17.appendChild(newInput3);
-    newDiv11.appendChild(newDiv12);
-    newDiv11.appendChild(newDiv13);
-    newDiv14.appendChild(newDiv15);
-    newDiv14.appendChild(newDiv17);
-    newDiv10.appendChild(newDiv11);
-    newDiv10.appendChild(newDiv14);
-    newDiv5.appendChild(newInput1);
-    newDiv5.appendChild(newSpan3);
-    newDiv5.appendChild(newSpan2);
-    newDiv4.appendChild(newDiv5);
-    newDiv3.appendChild(newDiv4);
-    newDiv3.appendChild(newDiv6);
-    newDiv3.appendChild(newDiv10);
-    newDiv1.appendChild(newDiv3);
-    frag.appendChild(newDiv1);
-    newDivRubric4.appendChild(newSpanRubric1);
-    newDivRubric3.appendChild(newDivRubric4);
-    newDivRubric3.appendChild(newDivRubric5);
-    newDivRubric1.appendChild(newDivRubric3);
-    frag.appendChild(newDivRubric1);
+    frag.appendChild(content1);
+    frag.appendChild(content2);
     container.appendChild(frag);
-
     setRecordFeedbck(recordIndex);
 }
 function createFinalRecordEl(recordIndex) {
-    var container = docEl("recordsContainer");
-    var frag = document.createDocumentFragment();
-    var newDiv1 = document.createElement("div");
-    var newDiv3 = document.createElement("div");
-    var newDiv4 = document.createElement("div");
-    var newDiv5 = document.createElement("div");
-    var newDiv6 = document.createElement("div");
-    var newDiv10 = document.createElement("div");
-    var newDiv11 = document.createElement("div");
-    var newDiv12 = document.createElement("div");
-    var newDiv13 = document.createElement("div");
-    var newDiv14 = document.createElement("div");
-    var newDiv15 = document.createElement("div");
-    var newDiv17 = document.createElement("div");
-    var newInput1 = document.createElement("input");
-    var newSpan2 = document.createElement("span");
-    var newSpan3 = document.createElement("span");
-    var dateTime = new Date(appEditor.appEditRecords.tempStudentRecords[recordIndex].timeStamp).toLocaleString();
-    var newDiv22 = document.createElement("div");
-    var newDiv23 = document.createElement("div");
-    var newLabel2 = document.createElement("label");
-    var newInput2 = document.createElement("input");
-    var newSpan4 = document.createElement("span");
-    var newSpanRubric1 = document.createElement("span");
-    var newDivRubric1 = document.createElement("div");
-    var newDivRubric3 = document.createElement("div");
-    var newDivRubric4 = document.createElement("div");
-    var newDivRubric5 = document.createElement("div");
+    const record = appEditor.appEditRecords.tempStudentRecords[recordIndex];
+    const dateTime = new Date(record.timeStamp).toLocaleString();
+    const fdbck = record.feedback.rubricChkd;
+    const ctx = record.context;
+    let container = docEl("recordsContainer");
+    let frag = document.createDocumentFragment();
+    let content1 = frag_createFinalRecordElPt1(recordIndex, dateTime, fdbck, ctx); //@domFrags
+    let content2 = frag_createFinalRecordElPt2(recordIndex, dateTime, ctx); //@domFrags
 
-    newDiv14.className = "col-lg-3 col-md-3 col-sm-3 col-xs-6 fbkSection";
-    newDiv15.className = "feedbackLabel text-center";
-    newDiv15.textContent = "Rubric";
-    newDiv17.className = "text-center";
-    newDiv22.className = "squaredFour";
-    newDiv22.style.display = "inline-block";
-    newInput2.type = "checkbox";
-    newInput2.id = "opt2_" + recordIndex;
-    newInput2.value = "nada";
-    newInput2.checked = appEditor.appEditRecords.tempStudentRecords[recordIndex].feedback.rubricChkd;
-    newLabel2.htmlFor = "opt2_" + recordIndex;
-    newSpan4.className = "small";
-    newSpan4.textContent = "Include";
-    newDiv23.id = "fv" + recordIndex;
-    newDiv23.className = "small btn btn-sm btn-default rubricViewer";
-    newDiv23.style.marginLeft = 10 + "px";
-    newDiv23.textContent = "View rubric";
-    newDiv22.appendChild(newInput2);
-    newDiv22.appendChild(newLabel2);
-    newDiv17.appendChild(newDiv22);
-    newDiv17.appendChild(newSpan4);
-    newDiv17.appendChild(newDiv23);
-    newDiv1.id = "fh" + recordIndex;
-    newDiv1.className = "row";
-    newDiv3.className = "col-lg-12 recordWrapper";
-    newDiv4.className = "row";
-    newDiv5.className = "col-lg-12";
-    newDiv6.id = "fuSection" + recordIndex;
-    newDiv10.className = "row";
-    newDiv10.style.marginLeft = 0;
-    newDiv10.style.marginRight = 0;
-    newDiv11.className = "col-lg-9 col-md-9 col-sm-9 fbkSection";
-    newDiv12.className = "feedbackLabel";
-    newDiv12.textContent = "General feedback";
-    newDiv13.id="opt1_" + recordIndex;
-    newDiv13.contentEditable = "true";
-    newDiv13.className = "fbkA commentBtnA";
-    newInput1.id = "fc" + recordIndex;
-    newInput1.className = "inputContext";
-    newInput1.value = appEditor.appEditRecords.tempStudentRecords[recordIndex].context;
-    newSpan2.textContent = dateTime;
-    newSpan2.className = "btn-xs pull-right";
-    newSpan3.id = "fx" + recordIndex + "-0";
-    newSpan3.className = "btn btn-xs btn-dangerous pull-right destroyRecord";
-    newSpan3.textContent = "Delete Record";
-    newDivRubric1.id = "fq" + recordIndex;
-    newDivRubric1.className = "row nodisplay";
-    newDivRubric3.className = "col-lg-12 recordWrapper";
-    newDivRubric4.className = "row text-center";
-    newDivRubric4.style.marginBottom = 5 + "px";
-    newDivRubric4.textContent = "Rubric for " + appEditor.appEditRecords.tempStudentRecords[recordIndex].context + " - " + dateTime + " ";
-    newDivRubric5.id = "frrA" + recordIndex;
-    newDivRubric5.className = "row small";
-    newSpanRubric1.id = "fw" + recordIndex;
-    newSpanRubric1.className = "btn btn-sm btn-default";
-    newSpanRubric1.textContent = "Back to record";
-
-    newDiv11.appendChild(newDiv12);
-    newDiv11.appendChild(newDiv13);
-    newDiv14.appendChild(newDiv15);
-    newDiv14.appendChild(newDiv17);
-    newDiv10.appendChild(newDiv11);
-    newDiv10.appendChild(newDiv14);
-    newDiv5.appendChild(newInput1);
-    newDiv5.appendChild(newSpan3);
-    newDiv5.appendChild(newSpan2);
-    newDiv4.appendChild(newDiv5);
-    newDiv3.appendChild(newDiv4);
-    newDiv3.appendChild(newDiv6);
-    newDiv3.appendChild(newDiv10);
-    newDiv1.appendChild(newDiv3);
-    frag.appendChild(newDiv1);
-    newDivRubric4.appendChild(newSpanRubric1);
-    newDivRubric3.appendChild(newDivRubric4);
-    newDivRubric3.appendChild(newDivRubric5);
-    newDivRubric1.appendChild(newDivRubric3);
-    frag.appendChild(newDivRubric1);
+    frag.appendChild(content1);
+    frag.appendChild(content2);
     container.appendChild(frag);
-
-    setRecordFeedbck(recordIndex);
-    setRecordRubric(recordIndex);
 }
 function createFinalRecordSectionEl(recordIndex, sectionName, sectionIndex) {
-    var container = docEl("fuSection" + recordIndex);
-    var frag = document.createDocumentFragment();
-    var newDiv0 = document.createElement("div");
-    var newDiv1 = document.createElement("div");
-    var newSpan1 = document.createElement("span");
-    var newInput = document.createElement("input");
-    var newTable = document.createElement("table");
-    var newThead = document.createElement("thead");
-    var newTr = document.createElement("tr");
-    var newTh1 = document.createElement("th");
-    var newTh2 = document.createElement("th");
-    var newTh3 = document.createElement("th");
-    var newTh4 = document.createElement("th");
-    var newTbody = document.createElement("tbody");
+    let container = docEl("fuSection" + recordIndex);
+    let frag = document.createDocumentFragment();
+    let content = frag_createFinalRecordSectionEl(recordIndex, sectionName, sectionIndex); //@domFrags
 
-    newDiv0.id = "fu" + recordIndex + "-" + sectionIndex;
-    newDiv0.style.marginBottom = 10 + "px";
-    newDiv1.style.marginBottom = 5 + "px";
-    newSpan1.textContent = "Section: ";
-    newInput.id = "opt4_" + recordIndex + "_" + sectionIndex;
-    newInput.className = "finalRecordSection";
-    newInput.value = sectionName;
-    newTable.className = "table table-condensed table-bordered";
-    newTable.style.marginBottom = 5 + "px";
-    newThead.className = "text-center tableHeader";
-    newTh1.className = "col-width120";
-    newTh1.textContent = "Criteria";
-    newTh2.className = "col-width50";
-    newTh2.textContent = "Score";
-    newTh3.className = "col-width50";
-    newTh3.textContent = "Max.";
-    newTh4.className = "col-lg-6 col-md-6 col-sm-6";
-    newTh4.textContent = "Descriptor";
-    newTbody.id = "ff" + recordIndex + "-" + sectionIndex;
-
-    newDiv1.appendChild(newSpan1);
-    newDiv1.appendChild(newInput);
-    newTr.appendChild(newTh1);
-    newTr.appendChild(newTh2);
-    newTr.appendChild(newTh3);
-    newTr.appendChild(newTh4);
-    newThead.appendChild(newTr);
-    newTable.appendChild(newThead);
-    newTable.appendChild(newTbody);
-    newDiv0.appendChild(newDiv1);
-    newDiv0.appendChild(newTable);
-    frag.appendChild(newDiv0);
+    frag.appendChild(content);
     container.appendChild(frag);
 }
 function createFinalRecordCriteriasEl(recordIndex, sectionIndex) { //creates one row (tr) for each criteria of a section
-    var container = docEl("ff" + recordIndex + "-" + sectionIndex);
-    var frag = document.createDocumentFragment();
-    var allCriterias = appEditor.appEditRecords.tempStudentRecords[recordIndex].scores[sectionIndex];
-    var allCriteriasLength = allCriterias.length;
-    var newTr2 = document.createElement("tr"); //the section comment...
-    var newTd6 = document.createElement("td");
-    var newTd7 = document.createElement("td");
-    var i,
-        ii;
+    const refObj = appEditor.appEditRecords.tempStudentRecords[recordIndex];
+    const allCriterias = refObj.scores[sectionIndex];
+    const fdbck = refObj.feedback.rubric[sectionIndex];
+    const comments = refObj.comments[sectionIndex];
+    let container = docEl("ff" + recordIndex + "-" + sectionIndex);
+    let frag = document.createDocumentFragment();
+    let content = frag_createFinalRecordCriteriasEl(recordIndex, sectionIndex, allCriterias, fdbck, comments);
 
-    for (i = 0; i < allCriteriasLength; i++) {
-        var newTr = document.createElement("tr");
-        var newTd1 = document.createElement("td");
-        var newTd2 = document.createElement("td");
-        var newTd3 = document.createElement("td");
-        var newTd4 = document.createElement("td");
-        var criteriaId = "ff" + recordIndex + "-" + sectionIndex + "-" + i + "-";
-        var newDiv2 = document.createElement("div");
-        var newSelect1 = document.createElement("select");
-        var criteriaRange = appEditor.appEditRecords.tempStudentRecords[recordIndex].feedback.rubric[sectionIndex].sectionDef[i].criteriaDef;
-        var scoreRange = criteriaRange.map( function(el) { return el.score; });
-        var scoreRangeLen = scoreRange.length;
-
-        //newTd1.id = criteriaId + "0";
-        newTd1.textContent = allCriterias[i][0]; //[sectionIndex][criteriaIndex][criteria, score, max., descriptor]
-        newDiv2.className = "selectScore select-styleO";
-        newSelect1.id = criteriaId + "1";
-
-        for (ii = 0; ii < scoreRangeLen; ii++) {
-            var newOpt = document.createElement("option");
-
-            newOpt.value = scoreRange[ii];
-            newOpt.textContent = scoreRange[ii];
-
-            if (scoreRange[ii] === allCriterias[i][1]) { newOpt.selected = true; }
-            newSelect1.appendChild(newOpt);
-        }
-        //newTd3.id = criteriaId + "2";
-        newTd3.textContent = allCriterias[i][2];
-        newTd4.id = criteriaId + "3";
-        newTd4.textContent = allCriterias[i][3];
-
-        newDiv2.appendChild(newSelect1);
-        newTd2.appendChild(newDiv2);
-        newTr.appendChild(newTd1);
-        newTr.appendChild(newTd2);
-        newTr.appendChild(newTd3);
-        newTr.appendChild(newTd4);
-        frag.appendChild(newTr);
-    }
-    newTd6.textContent = "Comment:";
-    newTd7.id = "opt3_" + recordIndex + "_" + sectionIndex;
-    newTd7.contentEditable = "true";
-    newTd7.textContent = appEditor.appEditRecords.tempStudentRecords[recordIndex].comments[sectionIndex];
-    newTd7.colSpan = "3";
-    newTr2.appendChild(newTd6);
-    newTr2.appendChild(newTd7);
-    frag.appendChild(newTr2);
+    frag.appendChild(content);
     container.appendChild(frag);
 }
 function createFinalRecord() {
@@ -3087,28 +2631,35 @@ function createFinalRecord() {
         genScore = getGenScoreForNoRubric("gOvrllScr", "gOvrllMax");
         finalRecord.noRubricScore.scr = genScore[0];
         finalRecord.noRubricScore.max = genScore[1];
-    } else {
-        finalRecord.comments = [];
-        finalRecord.sectionNames = [];
-        finalRecord.scores = [];
-        finalRecord.sectionNames = appEditor.grader.tempRecord.sectionNames;
+        return finalRecord;
+    }
+    finalRecord.comments = [];
+    finalRecord.sectionNames = [];
+    finalRecord.scores = [];
+    finalRecord.sectionNames = appEditor.grader.tempRecord.sectionNames;
 
-        for ( i = 0; i < appEditor.grader.tempRecord.scores.length; i++ ) {
-            finalRecord.comments.push(appEditor.grader.tempRecord.comments[i]);
-            finalRecord.scores.push([]);
+    for ( i = 0; i < appEditor.grader.tempRecord.scores.length; i++ ) {
+        finalRecord.comments.push(appEditor.grader.tempRecord.comments[i]);
+        finalRecord.scores.push([]);
 
-            for ( ii = 0; ii < appEditor.grader.tempRecord.scores[i].length; ii++ ) {
-                recordVal = getTempRecordVariables(i, ii);
-                finalRecord.scores[i].push([]);
-                finalRecord.scores[i][ii].push(recordVal.criteria);
-                finalRecord.scores[i][ii].push(recordVal.score);
-                finalRecord.scores[i][ii].push(recordVal.maxScore); //@findMaxScore
-                finalRecord.scores[i][ii].push(recordVal.descriptor);
-            }
+        for ( ii = 0; ii < appEditor.grader.tempRecord.scores[i].length; ii++ ) {
+            recordVal = getTempRecordVariables(i, ii);
+            finalRecord.scores[i].push([]);
+            finalRecord.scores[i][ii].push(recordVal.criteria);
+            finalRecord.scores[i][ii].push(recordVal.score);
+            finalRecord.scores[i][ii].push(recordVal.maxScore); //@findMaxScore
+            finalRecord.scores[i][ii].push(recordVal.descriptor);
         }
     }
     return finalRecord;
 }
+
+
+
+
+
+
+
 function buildStudentgMap() {
     var clsses = allgClasses();
     var frag = document.createDocumentFragment();
@@ -3566,6 +3117,119 @@ function createAvailableRubriksDivider() {
     newDiv0.className = "rubricsDivider";
 
     frag.appendChild(newDiv0);
+    container.appendChild(frag);
+}
+//please refactor and keep @main:
+function buildRecordsMap() {
+    var clsses = allClasses();
+    var frag = document.createDocumentFragment();
+    var container = docEl("recordsMap");
+    var stdnts;
+    var aStdntRecords;
+    var i;
+    var ii;
+    var iii;
+
+    emptyContent(container);
+
+    for (i = 0; i < clsses.length; i++) {
+        var newDiv1 = document.createElement("div");
+        var newDiv2 = document.createElement("div");
+        var newTable1 = document.createElement("table");
+        var newTbody1 = document.createElement("tbody");
+        var newSpan0 = document.createElement("span");
+        var newDelSpan = document.createElement("span");
+        var newDlSpan = document.createElement("span");
+
+        newSpan0.id = "jq" + i;
+        newSpan0.className = "label label-md";
+        newSpan0.style.fontWeight = 400;
+        newSpan0.textContent = "Select all / none";
+        newDelSpan.id = "jz" + i;
+        newDelSpan.className = "btn btn-xs btn-dangerous destroyRecord pull-right";
+        newDelSpan.style.marginLeft = 5 + "px";
+        newDelSpan.textContent = "Delete selected";
+        newDlSpan.id = "jx" + i;
+        newDlSpan.className = "btn btn-xs btn-default pull-right";
+        newDlSpan.textContent = "Download selected";
+        newDlSpan.style.paddingLeft = 5 + "px";
+        newDlSpan.style.paddingRight = 5 + "px";
+        newDiv1.id = "jh" + i;
+        newDiv1.className = "mapClass";
+        newDiv1.textContent = "Class: " + clsses[i] + " ";
+        newDiv2.id = "jm" + i;
+        newTable1.className = "table small noBtmMargin";
+        newTbody1.id = "jb" + i;
+
+        stdnts = getCandidatesByClass(clsses[i]); //[["21526737","김채영"],["21526494","박주희"],...]
+
+        for (ii = 0; ii < stdnts.length; ii++) {
+            var newTr1 = document.createElement("tr");
+            var newTd1 = document.createElement("td");
+            var newDiv3 = document.createElement("div");
+
+            newDiv3.id = "jy" + i + "-" + ii;
+            newDiv3.dataset.cls = clsses[i];
+            newDiv3.dataset.sid = stdnts[ii][0];
+            newDiv3.dataset.nme = stdnts[ii][1];
+            newDiv3.className = "btn btn-sm btn-whiteBlue";
+            newDiv3.style.margin = 1 + "px";
+            newDiv3.textContent = "Edit";
+            newTr1.className = "striped";
+            newTd1.appendChild(newDiv3);
+            newTr1.appendChild(newTd1);
+
+            aStdntRecords = getOneSetOfRecords(stdnts[ii][0],stdnts[ii][1], clsses[i]); //id, name, class
+
+            if (!aStdntRecords.length) {
+                continue; //ignore unfound records...
+            } else {
+                var newTd3 = document.createElement("td");
+                var newSpan2 = document.createElement("span");
+
+                newSpan2.id = "jw" + i + "-" + ii;
+                newSpan2.dataset.cls = clsses[i];
+                newSpan2.dataset.sid = stdnts[ii][0];
+                newSpan2.dataset.nme = stdnts[ii][1];
+                newSpan2.className = "label label-md";
+                newSpan2.dataset.slct = "all";
+                newSpan2.textContent = stdnts[ii][0] + " " + stdnts[ii][1]; //"Select all"
+                newTd3.className = "tdSelectBtn";
+                newTd3.appendChild(newSpan2);
+                newTr1.appendChild(newTd3);
+
+                for (iii = 0; iii < aStdntRecords.length; iii++) { //i: is the class, ii: is the student, iii: is the record
+                    var recordDate = new Date(aStdntRecords[iii].timeStamp).toLocaleDateString();
+                    var newTd2 = document.createElement("td");
+                    var newDiv4 = document.createElement("div");
+                    var newInput1 = document.createElement("input");
+                    var newLabel1 = document.createElement("label");
+                    var newSpan1 = document.createElement("span");
+                    var recordId = "jk" + aStdntRecords[iii].recordKey;
+
+                    newDiv4.className = "squaredFour compacted";
+                    newInput1.type = "checkbox";
+                    newInput1.id = recordId;
+                    newInput1.className = "targeted";
+                    newLabel1.htmlFor = recordId;
+                    newSpan1.textContent = " " + aStdntRecords[iii].context + "\n" + recordDate;
+                    newDiv4.appendChild(newInput1);
+                    newDiv4.appendChild(newLabel1);
+                    newTd2.appendChild(newDiv4);
+                    newTd2.appendChild(newSpan1);
+                    newTr1.appendChild(newTd2);
+                }
+                newTbody1.appendChild(newTr1);
+            }
+        }
+        newDiv1.appendChild(newSpan0);
+        newDiv1.appendChild(newDelSpan);
+        newDiv1.appendChild(newDlSpan);
+        newTable1.appendChild(newTbody1);
+        newDiv2.appendChild(newTable1);
+        frag.appendChild(newDiv1);
+        frag.appendChild(newDiv2);
+    }
     container.appendChild(frag);
 }
 
