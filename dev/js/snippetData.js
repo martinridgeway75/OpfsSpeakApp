@@ -29,13 +29,13 @@ function hitDb(obj, worker, callBack) {
 
 /********************/
 
-//on first hit, snippets depend on fetch of rubrics
-//formerly getSnippetsFromDb()
-//hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expect [] || undefined
-
-//save
-//hitDb({ obj: appEditor.snippets, fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
-
+//first hit snippets currently depend on fetch of rubrics
+function getSnippetsFromDb() {
+    hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expect [] || undefined
+}
+function saveSnippetData() {
+    hitDb({ obj: appEditor.snippets, fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
+}
 /********************/
 
 function hasFetchedSnippets(data) {
@@ -55,41 +55,6 @@ function hasSetSnippets(msg) { //TODO: callback of hitDb...was formerly: saveSni
     }
     displayMsg("a", msg);
 }
-
-// function getSnippetsFromDb() {
-//     const uid = auth.currentUser.uid;
-
-//     if (appEditor.db.rubrics === false) {
-//         getRubricIndexesBeforeGetSnippets(uid);
-//         return;
-//     } 
-//     const path = "" + appEditor.settings.dbCtx + "/" + uid + "/snippets";
-    
-//     onValue(ref(db, path), (snapshot) => {
-//         appEditor.db.snippets = true;
-//         appEditor.snippets = snapshot.val() || [];
-//         initSnippets();
-//         snippetHandlersOn();
-//     }, (error) => {
-//         chkPermission(error);
-//     }, {
-//         onlyOnce: true
-//     });
-// }
-
-// function saveSnippetData() {
-//     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/snippets";
-
-//     set(ref(db, path), appEditor.snippets).then(() => {
-//         exitSnippets();
-//         displayMsg("b");
-//         }).catch((error) => {
-//             chkPermission(error);
-//             displayMsg("a", error);
-//         });
-// }
-
-
 
 /*****************************/
 

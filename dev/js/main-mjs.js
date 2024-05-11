@@ -1535,7 +1535,7 @@ function showEditRubric() {
 }
 function showEditSnippets() {
     if (appEditor.db.snippets === false) {
-        getSnippetsFromDb(); //rubric dependency resolved in callback
+        getSnippetsFromDb();
     }
     docEl("titleHeader").textContent = "Comment snippets";
     showEl("editSnippets");
