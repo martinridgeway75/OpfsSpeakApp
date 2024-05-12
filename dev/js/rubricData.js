@@ -23,6 +23,7 @@ function hitDb(obj, worker, callBack) {
 
     myWorker.onmessage = (e) => {
         callBack(e.data);
+        myWorker.terminate();
     }
     myWorker.postMessage(obj);
 }

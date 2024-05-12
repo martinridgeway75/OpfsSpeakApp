@@ -23,6 +23,7 @@ function hitDb(obj, worker, callBack) {
 
     myWorker.onmessage = (e) => {
         callBack(e.data);
+        myWorker.terminate();
     }
     myWorker.postMessage(obj);
 }
@@ -108,8 +109,7 @@ function hasFetchedSingleRecord(data) {
 
     if (recordObj !== undefined) {
         console.log(recordObj);
-        //TODO: retrieve recordKey, elId from the heap via the idx or this obj
-        //or: wrap onmessage in an async/await (preferred)
+        //TODO: need to await data, use eventListener
 
         recordObj.recordKey = recordKey; //add recordKey here so we can update changes by key directly
         dlSingleRecord(recordObj, elId);

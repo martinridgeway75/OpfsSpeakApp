@@ -23,6 +23,7 @@ function hitDb(obj, worker, callBack) {
 
     myWorker.onmessage = (e) => {
         callBack(e.data);
+        myWorker.terminate();
     }
     myWorker.postMessage(obj);
 }
@@ -34,6 +35,7 @@ function getSnippetsFromDb() {
     hitDb({ fileName: "snippets" }, "read", hasFetchedSnippets); //expect [] || undefined
 }
 function saveSnippetData() {
+    exitSnippets();
     hitDb({ obj: appEditor.snippets, fileName: "snippets" }, "write", hasSetSnippets); //expect <String> e || "OK"
 }
 /********************/
@@ -47,9 +49,8 @@ function hasFetchedSnippets(data) {
         appEditor.db.snippets = true;
     }  
 }
-function hasSetSnippets(msg) { //TODO: callback of hitDb...was formerly: saveSnippetData()
+function hasSetSnippets(msg) {
     if (msg === "OK") {
-        exitSnippets();
         displayMsg("b");
         return;
     }

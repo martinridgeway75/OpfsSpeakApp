@@ -1,8 +1,7 @@
-
+//@main
 function docEl(id) {
     return document.getElementById(id); // || null
 }
-
 function displayDbQuota() {
     let msg = "";
 
@@ -18,41 +17,16 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-
-
-/*******ref***************/
-
-//read
-getRecordsIndexFromDbAtInit();
-fetchSelectedRecordsForDownload();
-fetchSingleRecordForDownload();
-
-//write
-pushRecordsToDb();
-saveUpdatedRecords();
-
-//delete
-deleteRecordsViaMap();
-
-/**********************/
-
 function hitDb(obj, worker, callBack) { //worker: "read", "write", "delete"
     const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
         callBack(e.data);
+        myWorker.terminate();
     }
     myWorker.postMessage(obj);
 }
-//@write
-// const obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", obj: {}, fileUid: "" }};
-// hitDb(obj, "write", callBack);
 
-//@delete
-// const obj = { obj: {}, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["","",""] }}
-// hitDb(obj, "delete", callBack);
+//TODO: import, export all data
 
-//@read
-// const obj = { fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: ["","",""] }} //read multiple records during print/pdf
-// hitDb(obj, "read", callBack);
