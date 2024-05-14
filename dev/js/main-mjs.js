@@ -3,7 +3,59 @@
 
 let appEditor = {};
 
-//DB COMS
+async function readOnlyDb(obj) {
+    return new Promise( (resolve, reject) => {
+        const myWorker = new Worker("js/readdb.js");
+
+        myWorker.onmessage = async (e) => {
+            if (e.data) {
+                myWorker.terminate();
+                resolve(e.data);
+                return;
+            }
+            reject(0);
+        }
+        myWorker.postMessage(obj);
+    }).catch( (e) => {
+        reject(0);
+    });
+}
+
+//initial db read for: students (grader needs them to start), and rubrics (snippets need them to start)
+function getStudentAndRubricIdxs() {
+    readOnlyDb({ fileName: "studentData" }).then( (data) => { //expect [] || undefined
+        hasFetchedStudentData(data);
+    });
+    readOnlyDb({ fileName: "rubricsIdx" }).then( (data) => { //expect [] || undefined
+        hasFetchedRubricIdx(data);
+    });    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function deleteRecordsViaMap(checkedRecords) {
     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;

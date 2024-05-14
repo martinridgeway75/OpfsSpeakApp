@@ -2,10 +2,17 @@
 onmessage = (e) => {
     const data = e.data;
 
-    if (data?.subDir) {
-        writeFileToSubDir(data.subDir);
+    if (!data?.subDir) {
+        writeFile(data.obj, data.fileName).then( () => {
+            postMessage("OK");
+        });
+        return;
     }
-    writeFile(data.obj, data.fileName);
+    writeFileToSubDir(data.subDir).then( () => {
+        writeFile(data.obj, data.fileName).then( () => {
+            postMessage("OK");
+        });
+    });    
 };
 
 function prepFileContent(obj) {
@@ -41,7 +48,6 @@ async function writeFile(obj, fileName) {
         idxAccessHandle.write(content, {at: 0});
         idxAccessHandle.flush();
         idxAccessHandle.close();
-        postMessage("OK");
     } catch (e) {
         postMessage( (e).toString() );
     }

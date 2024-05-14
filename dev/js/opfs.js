@@ -17,16 +17,16 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-function hitDb(obj, worker, callBack) { //worker: "read", "write", "delete"
-    const workerName = "js/" + worker + "db.js";
-    const myWorker = new Worker(workerName);
 
-    myWorker.onmessage = (e) => {
-        callBack(e.data);
-        myWorker.terminate();
-    }
-    myWorker.postMessage(obj);
-}
+
+
+
+
+
+
+
+
+
 
 //TODO: import, export all data
 

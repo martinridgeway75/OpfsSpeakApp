@@ -17,22 +17,44 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-function hitDb(obj, worker, callBack) {
+function writeToDb(obj, worker, callBack) {
     const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
-        callBack(e.data);
         myWorker.terminate();
+        if (callBack) {
+            callBack(e.data);
+        }
     }
     myWorker.postMessage(obj);
 }
 
+async function readOnlyDb(obj) {
+    return new Promise( (resolve, reject) => {
+        const myWorker = new Worker("js/readdb.js");
+
+        myWorker.onmessage = async (e) => {
+            if (e.data) {
+                myWorker.terminate();
+                resolve(e.data);
+                return;
+            }
+            reject(0);
+        }
+        myWorker.postMessage(obj);
+    }).catch( (e) => {
+        reject(0);
+    });
+}
+
 function readStudentData(){
-    hitDb({ fileName: "studentData" }, "read", hasFetchedStudentData); //expect [] || undefined
+    readOnlyDb({ fileName: "studentData" }).then( (data) => { //expect [] || undefined
+        hasFetchedStudentData(data);
+    });
 }
 function saveStudentData() {
-    hitDb({ obj: appEditor.studentData, fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
+    writeToDb({ obj: appEditor.studentData, fileName: "studentData" }, "write", hasSetStudentData); //expect <String> e || "OK"
 }
 
 /*********callbacks***********/

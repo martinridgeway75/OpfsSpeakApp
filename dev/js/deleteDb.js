@@ -4,7 +4,7 @@ onmessage = (e) => {
 
     writeFile(data.obj, data.fileName).then( () => {
         deleteFilesFromSubDir(data.subDir.fileUidsArr, data.subDir.path).then( () => {
-            postMessage(data.subDir.fileUidsArr);
+            postMessage("OK");
         });
     });
 };
@@ -27,7 +27,7 @@ async function writeFile(obj, fileName) {
         idxAccessHandle.flush();
         idxAccessHandle.close();
     } catch (e) {
-        postMessage([]);
+        postMessage( (e).toString() );
     }
 }
 async function deleteFilesFromSubDir(arrOfFileNames, path) {
@@ -39,6 +39,6 @@ async function deleteFilesFromSubDir(arrOfFileNames, path) {
             subDir.removeEntry(fileName);
         });
     } catch (e) {
-        postMessage([]);
+        postMessage( (e).toString() );
     }
 }

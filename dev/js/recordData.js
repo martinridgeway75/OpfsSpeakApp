@@ -17,19 +17,22 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-function hitDb(obj, worker, callBack) {
+function writeToDb(obj, worker, callBack) {
     const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
-        callBack(e.data);
         myWorker.terminate();
+        if (callBack) {
+            callBack(e.data);
+        }
     }
     myWorker.postMessage(obj);
 }
 
 /********************/
 
+//TODO: hitDb -> writeToDb
 function getRecordsIndexFromDb() {
     hitDb({ fileName: "recordsIdx" }, "read", hasFetchedRecordsIdx); //expect [] || undefined
 }

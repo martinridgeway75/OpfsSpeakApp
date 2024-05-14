@@ -17,47 +17,75 @@ function displayDbQuota() {
     }
     docEl("welcomeMsg").textContent = msg;
 }
-function hitDb(obj, worker, callBack) {
+function writeToDb(obj, worker, callBack) {
     const workerName = "js/" + worker + "db.js";
     const myWorker = new Worker(workerName);
 
     myWorker.onmessage = (e) => {
-        callBack(e.data);
         myWorker.terminate();
+        if (callBack) {
+            callBack(e.data);
+        }
     }
     myWorker.postMessage(obj);
+}
+async function readOnlyDb(obj) {
+    return new Promise( (resolve, reject) => {
+        const myWorker = new Worker("js/readdb.js");
+
+        myWorker.onmessage = async (e) => {
+            if (e.data) {
+                myWorker.terminate();
+                resolve(e.data);
+                return;
+            }
+            reject(0);
+        }
+        myWorker.postMessage(obj);
+    }).catch( (e) => {
+        reject(0);
+    });
 }
 
 /********************/
 //@grader
 function getSelectedRubric(key) {
-    hitDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }, "read", hasFetchedRubric); //expect [] || undefined
+    readOnlyDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }).then( (data) => { //expect [] || undefined
+        hasFetchedRubric(data);
+    });
 }
 //@records
 function getSelectedRubrik(key){
-    hitDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }, "read", hasFetchedRubrik); //expect [] || undefined
+    readOnlyDb({ subDir: { path: "rubrics", fileUidsArr: [key] } }).then( (data) => { //expect [] || undefined
+        hasFetchedRubrik(data);
+    });
 }
 function getRubricIndexesFromDb() {
-    hitDb({ fileName: "rubricsIdx" }, "read", hasFetchedRubricIdx); //expect {} || undefined
+    readOnlyDb({ fileName: "rubricsIdx" }).then( (data) => { //expect [] || undefined
+        hasFetchedRubricIdx(data);
+    });
 }
 function removeRubrikFromDb(key) {
     delete appEditor.rubricsIndex[key];
-    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", fileUidsArr: [key] }}, "delete", hasRemovedRubric);  //expect [Uuid] || []
+    rubrikDestroyed(key);
+    writeToDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", fileUidsArr: [key] }}, "delete", hasRemovedRubrik);  //expect <String> e || "OK"
 }
 function rubricSaveAsNew(key) {
     const postData = convertToRubricObj(key);
     const newPostKey = crypto.randomUUID();
     const idxObj = idxObjFromRubricPostData(postData);
 
-    rubricCommitted(newPostKey, idxObj); //update appEditor.rubricsIndex before hitting the db
-    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
+    rubricCommitted(newPostKey, idxObj);
+    enableEl("editRubric");
+    writeToDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
 }
 function rubricUpdateExisting(key, relevantKey) {
     const postData = convertToRubricObj(key);
     const idxObj = idxObjFromRubricPostData(postData);
 
-    rubricCommitted(relevantKey, idxObj); //update appEditor.rubricsIndex before hitting the db
-    hitDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
+    rubricCommitted(relevantKey, idxObj);
+    enableEl("editRubric");
+    writeToDb({ obj: appEditor.rubricsIndex, fileName: "rubricsIdx", subDir: { path: "rubrics", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRubric); //expect <String> e || "OK"
 }
 
 /*********callbacks***********/
@@ -67,7 +95,7 @@ function hasFetchedRubric(data) {
     appEditor.grader.loadedRubric = data; // [{}]
     showSectionsForSelectedRubric(Object.keys(data)[0]);
     finishInit();
-    // (error) => { displayMsg("y", error);
+    // TODO: (error) => { displayMsg("y", error);
 }
 //@records
 function hasFetchedRubrik(data) {
@@ -89,16 +117,16 @@ function hasFetchedRubricIdx(data) {
         loadRubriks();
     }
 }
-function hasRemovedRubric(key) { //expect [Uuid] || []
-    if (!key.length) { return; }
-
-    rubrikDestroyed(key[0]);
-}
 function hasSetNewRubric(msg) {
     if (msg === "OK") { return; }
 
     displayMsg("d", msg);
-    enableEl("editRubric");
+}
+
+function hasRemovedRubrik(msg) {
+    if (msg === "OK") { return; }
+
+    displayMsg("c", msg);
 }
 
 /*************************/
