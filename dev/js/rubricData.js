@@ -94,7 +94,7 @@ function rubricUpdateExisting(key, relevantKey) {
 function hasFetchedRubric(data) {
     appEditor.grader.loadedRubric = data; // [{}]
     showSectionsForSelectedRubric(Object.keys(data)[0]);
-    finishInit();
+    finishInit(); 
     // TODO: (error) => { displayMsg("y", error); //error returns []
 }
 //@records
@@ -130,7 +130,6 @@ function hasRemovedRubrik(msg) {
 }
 
 /*************************/
-
 
 //RUBRICS
 

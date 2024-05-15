@@ -30,21 +30,75 @@ function writeToDb(obj, worker, callBack) {
     myWorker.postMessage(obj);
 }
 
+async function readOnlyDb(obj) {
+    return new Promise( (resolve, reject) => {
+        const myWorker = new Worker("js/readdb.js");
+
+        myWorker.onmessage = async (e) => {
+            myWorker.terminate();
+            if (e.data) {
+                resolve(e.data);
+                return;
+            }
+            reject(0);
+        }
+        myWorker.postMessage(obj);
+    }).catch( (e) => {
+        reject(0);
+    });
+}
+
 /********************/
 
-//TODO: hitDb -> writeToDb
 function getRecordsIndexFromDb() {
-    hitDb({ fileName: "recordsIdx" }, "read", hasFetchedRecordsIdx); //expect [] || undefined
-}
-//@records
-function fetchSingleRecordForDownload(key){
-    hitDb({ subDir: { path: "records", fileUidsArr: [key] } }, "read", hasFetchedSingleRecord); //expect [] || undefined
+    readOnlyDb({ fileName: "recordsIdx" }).then( (data) => { //expect [] || undefined
+        hasFetchedRecordsIdx(data);
+    });
 }
 
-// //@grader
-// function getSelectedRecords(key) {
-//     hitDb({ subDir: { path: "records", fileUidsArr: [key] } }, "read", hasFetchedRecords); //expect [] || undefined
+//@records
+function getSingleRecordForDownload(keyArr, elId){
+    readOnlyDb({ subDir: { path: "records", fileUidsArr: keyArr } }).then( (data) => { //expect [] || undefined
+        hasFetchedSingleRecord(data[0], key, elId);
+    });
+}
+function getSelectedRecordsForDownload(keyArr, elId) {
+    readOnlyDb({ subDir: { path: "records", fileUidsArr: keyArr } }).then( (dataArr) => { //expect [] || undefined
+        hasFetchedRecords(dataArr, keyArr, elId);
+    });
+}
+
+// function getSelectedRecordsForDownload(keyArr, elId) { //promises!
+//     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
+//     const len = keyArr.length;
+//     let pdfObjArr = [];
+//     let path;
+//     let pdfObj;
+//     let recordObj;
+
+//     keyArr.forEach( function(recordKey) { //TODO: returned Array now has ALL records
+//         path = ctx + "/records/" + recordKey;
+
+//         onValue(ref(db, path), (snapshot) => {
+//             recordObj = snapshot.val();
+
+//             if (recordObj !== null) {
+//                 recordObj.recordKey = recordKey; //add recordKey here so we can update changes by key directly
+//                 pdfObj = {};
+//                 pdfObj.content = buildPDFrecord(recordObj);
+//                 pdfObj.name = '' + recordObj.studentData.stCls + '_' + recordObj.studentData.stNme + '_' + recordObj.studentData.stId + '_' + recordObj.context+ '_' + recordObj.timeStamp + '.pdf';
+//                 pdfObjArr.push(pdfObj);
+
+//                 if (pdfObjArr.length === len) { addToZip(pdfObjArr, elId); }
+//             }
+//         }, (error) => {
+//             chkPermission(error);
+//         }, {
+//             onlyOnce: true
+//         });
+//     });
 // }
+
 
 // function removeRubrikFromDb(key) {
 //     // delete appEditor.recordsIndex[key];
@@ -81,44 +135,18 @@ function hasFetchedRecordsIdx(data) {
         appEditor.db.records = true;
     }
 }
+function hasFetchedSingleRecord(data, key, elId) {
+    if (data == undefined) { return; }
 
-function getRecordsIndexFromDb() {
-    const path = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid + "/recordsIndex";
-
-    onValue(ref(db, path), (snapshot) => {
-        const flatRec = flattenRecords(snapshot.val());
-
-        appEditor.db.records = true;
-
-        if (flatRec === false) { //false would be null, undefined, {}, []
-            appEditor.recordsIndex = [];
-        }
-        displayRecords();
-        recordsHandlersOn();     
-    }, (error) => {
-        chkPermission(error);
-    }, {
-        onlyOnce: true
-    });
+    data.recordKey = key; //add recordKey here so we can update changes by key directly
+    dlSingleRecord(data, elId);
 }
+function hasFetchedRecords(dataArr, keyArr) {
+    if (dataArr == undefined || !dataArr.length) { return; }
 
+    
 
-
-
-
-
-function hasFetchedSingleRecord(data) {
-    const recordObj = data;
-
-    if (recordObj !== undefined) {
-        console.log(recordObj);
-        //TODO: need to await data, use eventListener
-
-        recordObj.recordKey = recordKey; //add recordKey here so we can update changes by key directly
-        dlSingleRecord(recordObj, elId);
-    }
 }
-
 
 
 
@@ -158,36 +186,7 @@ function deleteRecordsViaMap(checkedRecords) {
         displayMsg("n", error);
     });
 }
-function fetchSelectedRecordsForDownload(checkedRecords, elId) { //promises!
-    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
-    const len = checkedRecords.length;
-    let pdfObjArr = [];
-    let path;
-    let pdfObj;
-    let recordObj;
 
-    checkedRecords.forEach( function(recordKey) {
-        path = ctx + "/records/" + recordKey;
-
-        onValue(ref(db, path), (snapshot) => {
-            recordObj = snapshot.val();
-
-            if (recordObj !== null) {
-                recordObj.recordKey = recordKey; //add recordKey here so we can update changes by key directly
-                pdfObj = {};
-                pdfObj.content = buildPDFrecord(recordObj);
-                pdfObj.name = '' + recordObj.studentData.stCls + '_' + recordObj.studentData.stNme + '_' + recordObj.studentData.stId + '_' + recordObj.context+ '_' + recordObj.timeStamp + '.pdf';
-                pdfObjArr.push(pdfObj);
-
-                if (pdfObjArr.length === len) { addToZip(pdfObjArr, elId); }
-            }
-        }, (error) => {
-            chkPermission(error);
-        }, {
-            onlyOnce: true
-        });
-    });
-}
 function saveUpdatedRecords() { //@db...only records for the current temp student are being updated
     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const updates = {};
@@ -220,62 +219,6 @@ function saveUpdatedRecords() { //@db...only records for the current temp studen
         });
     }
 }
-
-
-//TODO: first dbHits...rollthisupintoone 
-// function graderNeedsStudentDataFromDb() {
-//     if (appEditor.db.students !== false) { return; }
-
-//     const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/studentData";
-
-//     onValue(ref(db, path), (snapshot) => {
-//         appEditor.studentData = snapshot.val() || [];
-//         appEditor.db.students = true;
-
-//         initStudentData();
-//         studentInfoHandlersOn();
-
-//         if (appEditor.db.snippets === false) { //xtra call to db for snippets
-//             getSnippetsFromDb();
-//         }
-//         initGrader();
-//     }, (error) => {
-//         chkPermission(error);
-//     }, {
-//         onlyOnce: true
-//     });
-// }
-// function getEverythingGraderNeedsFromDb() {
-//     if (appEditor.db.rubrics === false) {
-//         const path = "" + appEditor.settings.dbCtx + "/" + auth.currentUser.uid + "/savedRubricsIndex";
-
-//         onValue(ref(db, path), (snapshot) => {
-//             appEditor.rubricsIndex = snapshot.val() || {};
-//             appEditor.db.rubrics = true;
-//             if (appEditor.db.snippets === false) { //async call to db for snippets
-//                 getSnippetsFromDb();
-//             }
-//             if (!isObjEmpty(appEditor.rubricsIndex)) {
-//                 showEl("gaLoadChkBoxes");
-//                 loadRubriks();
-//             }
-//             rubrikHandlersOn();
-//             graderNeedsStudentDataFromDb();
-//             return;
-//         }, (error) => {
-//             chkPermission(error);
-//         }, {
-//             onlyOnce: true
-//         });
-//     } else if (appEditor.db.students === false) {
-//         graderNeedsStudentDataFromDb();
-//         return;
-//     } else {
-//         initGrader();
-//     }
-// }
-
-
 function pushRecordsToDb(dataObj) {
     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const postData = { timeStamp: dataObj.timeStamp, context: dataObj.context, studentData: dataObj.studentData };
@@ -443,10 +386,10 @@ function getAllChkdForDl(elId) { //called on "download" button
     docEl(elId).className += " invisible";
 
     if (checkedRecords.length === 1) {
-        fetchSingleRecordForDownload(checkedRecords[0], elId);
+        getSingleRecordForDownload(checkedRecords, elId);
         return;
     }
-    fetchSelectedRecordsForDownload(checkedRecords, elId);
+    getSelectedRecordsForDownload(checkedRecords, elId);
 }
 
 //NEW RECORDS IN GRADER
