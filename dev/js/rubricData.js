@@ -34,8 +34,8 @@ async function readOnlyDb(obj) {
         const myWorker = new Worker("js/readdb.js");
 
         myWorker.onmessage = async (e) => {
+            myWorker.terminate();
             if (e.data) {
-                myWorker.terminate();
                 resolve(e.data);
                 return;
             }
@@ -95,7 +95,7 @@ function hasFetchedRubric(data) {
     appEditor.grader.loadedRubric = data; // [{}]
     showSectionsForSelectedRubric(Object.keys(data)[0]);
     finishInit();
-    // TODO: (error) => { displayMsg("y", error);
+    // TODO: (error) => { displayMsg("y", error); //error returns []
 }
 //@records
 function hasFetchedRubrik(data) {

@@ -35,8 +35,8 @@ async function readOnlyDb(obj) {
         const myWorker = new Worker("js/readdb.js");
 
         myWorker.onmessage = async (e) => {
+            myWorker.terminate();
             if (e.data) {
-                myWorker.terminate();
                 resolve(e.data);
                 return;
             }
