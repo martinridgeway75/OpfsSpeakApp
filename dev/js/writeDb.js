@@ -8,7 +8,7 @@ onmessage = (e) => {
         });
         return;
     }
-    writeFileToSubDir(data.subDir).then( () => {
+    writeToSubDir(data.subDir).then( () => {
         writeFile(data.obj, data.fileName).then( () => {
             postMessage("OK");
         });
@@ -21,12 +21,32 @@ function prepFileContent(obj) {
 
     return textEncoder.encode(str);
 }
-async function writeFileToSubDir(subDir) {
+
+async function writeToSubDir(subDir) {
+    if (subDir?.fileUidsArr.length) {
+        writeRecordFilesToSubDir(subDir.obj, subDir.path, subDir.fileUidsArr); //subDir.obj is an [] of {}s
+    } else {
+        writeOneFileToSubDir(subDir.obj, subDir.path, subDir.fileUid);
+    }
+}
+async function writeRecordFilesToSubDir(subDir) {
+
+//promise.all etc.., call writeOneFileToSubDir(subDir.fileUidsArr[i])
+
+
+
+
+
+
+
+
+}
+async function writeOneFileToSubDir(obj, path, fileUid) {
     try {
-        const content = prepFileContent(subDir.obj);
+        const content = prepFileContent(obj);
         const opfsRoot = await navigator.storage.getDirectory();
-        const opfsSubDir = await opfsRoot.getDirectoryHandle(subDir.path, { create: true });
-        const recordFileHandle = await opfsSubDir.getFileHandle(subDir.fileUid, {create: true});
+        const opfsSubDir = await opfsRoot.getDirectoryHandle(path, { create: true });
+        const recordFileHandle = await opfsSubDir.getFileHandle(fileUid, {create: true});
         const recordAccessHandle = await recordFileHandle.createSyncAccessHandle();
 
         recordAccessHandle.truncate(0);

@@ -136,28 +136,22 @@ function hasRemovedRecords(msg) {
 
 
 
+//TODO: here
 
+function saveUpdatedRecords() {//records for the current temp student are being updated
+    saveUpdateRecordsInAppEditor();
+    displayMsg("r");
+    buildRecordsMap(); //changes will be reflected onreload here
+    exitUpdateRecords();
+    //@error => { displayMsg("a", error);
 
-function saveUpdatedRecords(key, relevantKey) {
-    // const postData = convertTo...(key);
-    // const idxObj = idxObjFrom...(postData);
-
-    // recordsCommitted(relevantKey, idxObj); //update appEditor.recordsIndex before hitting the db
-    hitDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
-}
-
-function saveUpdatedRecords() { //@db...only records for the current temp student are being updated
-    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
-    const updates = {};
-    let recordIdxPath;
-    let recordPath;
 
     if (appEditor.appEditRecords.tempStudentRecords.length) {
         appEditor.appEditRecords.tempStudentRecords.forEach( function (el) {
             recordIdxPath = ctx + "/recordsIndex/" + el.recordKey;
             recordPath = ctx + "/records/" + el.recordKey;
 
-            if ( el.hasOwnProperty("null_marked_for_deletion")) {
+            if (el.hasOwnProperty("null_marked_for_deletion")) { //TODO: call delete
                 if (el.null_marked_for_deletion === true) {
                     updates[recordIdxPath] = null;
                     updates[recordPath] = null;
@@ -167,17 +161,15 @@ function saveUpdatedRecords() { //@db...only records for the current temp studen
                 updates[recordPath] = removeRecordKeyFromObjForDb(el);
             }
         });
-        update(ref(db), updates).then(() => {
-            saveUpdateRecordsInAppEditor();
-            displayMsg("r");
-            buildRecordsMap(); //changes will be reflected onreload here
-            exitUpdateRecords();
-        }).catch((error) => {
-            chkPermission(error);
-            displayMsg("a", error);
-        });
     }
-}
+
+    //TODO: subDir.obj && subDir.fileUid MUST BE ARRAYS!
+
+    // recordsCommitted(relevantKey, idxObj); //update appEditor.recordsIndex before hitting the db
+    writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUidsArr: relevantKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
+}   //NOTE: do we need fileUidsArr? can we not run Object.keys(postData) ?
+
+
 
 
 
