@@ -67,44 +67,14 @@ function getSelectedRecordsForDownload(keyArr, elId) {
         hasFetchedRecords(dataArr, keyArr, elId);
     });
 }
+function deleteRecordsViaMap(keyArr) {
+    updateDeletionOfRecordsInAppEditor(keyArr);
+    displayMsg("o");
+    buildRecordsMap();
+    writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: keyArr }}, "delete", hasRemovedRecords);  //expect [Uuid] || []
+}
 
-// function getSelectedRecordsForDownload(keyArr, elId) { //promises!
-//     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
-//     const len = keyArr.length;
-//     let pdfObjArr = [];
-//     let path;
-//     let pdfObj;
-//     let recordObj;
-
-//     keyArr.forEach( function(recordKey) { //TODO: returned Array now has ALL records
-//         path = ctx + "/records/" + recordKey;
-
-//         onValue(ref(db, path), (snapshot) => {
-//             recordObj = snapshot.val();
-
-//             if (recordObj !== null) {
-//                 recordObj.recordKey = recordKey; //add recordKey here so we can update changes by key directly
-//                 pdfObj = {};
-//                 pdfObj.content = buildPDFrecord(recordObj);
-//                 pdfObj.name = '' + recordObj.studentData.stCls + '_' + recordObj.studentData.stNme + '_' + recordObj.studentData.stId + '_' + recordObj.context+ '_' + recordObj.timeStamp + '.pdf';
-//                 pdfObjArr.push(pdfObj);
-
-//                 if (pdfObjArr.length === len) { addToZip(pdfObjArr, elId); }
-//             }
-//         }, (error) => {
-//             chkPermission(error);
-//         }, {
-//             onlyOnce: true
-//         });
-//     });
-// }
-
-
-// function removeRubrikFromDb(key) {
-//     // delete appEditor.recordsIndex[key];
-//     hitDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: [key] }}, "delete", hasRemovedRecords);  //expect [Uuid] || []
-// }
-// function rubricSaveAsNew(key) {
+// function pushRecordsToDb(key) {
 //     // const postData = convertTo...(key);
 //     // const newPostKey = crypto.randomUUID();
 //     // const idxObj = idxObjFrom...(postData);
@@ -112,13 +82,7 @@ function getSelectedRecordsForDownload(keyArr, elId) {
 //     // rubricCommitted(newPostKey, idxObj); //update appEditor.recordsIndex before hitting the db
 //     hitDb({ obj: appEditor.rubricsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
 // }
-// function rubricUpdateExisting(key, relevantKey) {
-//     // const postData = convertTo...(key);
-//     // const idxObj = idxObjFrom...(postData);
 
-//     // recordsCommitted(relevantKey, idxObj); //update appEditor.recordsIndex before hitting the db
-//     hitDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
-// }
 
 /*********callbacks***********/
 
@@ -138,53 +102,48 @@ function hasFetchedRecordsIdx(data) {
 function hasFetchedSingleRecord(data, key, elId) {
     if (data == undefined) { return; }
 
-    data.recordKey = key; //add recordKey here so we can update changes by key directly
+    data.recordKey = key; //add recordKey tot he obj
     dlSingleRecord(data, elId);
 }
-function hasFetchedRecords(dataArr, keyArr) {
+function hasFetchedRecords(dataArr, keyArr, elId) {
     if (dataArr == undefined || !dataArr.length) { return; }
 
-    
+    const len = keyArr.length;
+    let pdfObjArr = [];
+    let pdfObj;
+    let recordObj;
 
+    keyArr.forEach( function(key, i) {
+        recordObj = dataArr[i];
+        recordObj.recordKey = key; //add recordKey to the obj
+        pdfObj = {};
+        pdfObj.content = buildPDFrecord(recordObj);
+        pdfObj.name = '' + recordObj.studentData.stCls + '_' + recordObj.studentData.stNme + '_' + recordObj.studentData.stId + '_' + recordObj.context+ '_' + recordObj.timeStamp + '.pdf';
+        pdfObjArr.push(pdfObj);
+
+        if (pdfObjArr.length === len) {
+            addToZip(pdfObjArr, elId);
+        }
+    });
+}
+function hasRemovedRecords(msg) {
+    if (msg === "OK") { return; }
+    
+    displayMsg("n", msg);
 }
 
 
 
 
-/*****************************/
 
 
 
+function saveUpdatedRecords(key, relevantKey) {
+    // const postData = convertTo...(key);
+    // const idxObj = idxObjFrom...(postData);
 
-
-
-
-
-
-
-
-
-
-
-function deleteRecordsViaMap(checkedRecords) {
-    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
-    const updates = {};
-
-    checkedRecords.forEach( function (el) {
-        const recordIdxPath = ctx + "/recordsIndex/" + el;
-        const recordPath = ctx + "/records/" + el;
-
-        updates[recordIdxPath] = null;
-        updates[recordPath] = null;
-    });
-    update(ref(db), updates).then(() => {
-        updateDeletionOfRecordsInAppEditor(checkedRecords);
-        displayMsg("o");
-        buildRecordsMap(); //changes will be reflected onreload here
-    }).catch((error) => {
-        chkPermission(error);
-        displayMsg("n", error);
-    });
+    // recordsCommitted(relevantKey, idxObj); //update appEditor.recordsIndex before hitting the db
+    hitDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: relevantKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
 }
 
 function saveUpdatedRecords() { //@db...only records for the current temp student are being updated
@@ -219,6 +178,14 @@ function saveUpdatedRecords() { //@db...only records for the current temp studen
         });
     }
 }
+
+
+
+
+
+
+
+
 function pushRecordsToDb(dataObj) {
     const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
     const postData = { timeStamp: dataObj.timeStamp, context: dataObj.context, studentData: dataObj.studentData };
@@ -243,26 +210,22 @@ function pushRecordsToDb(dataObj) {
         displayMsg("a", error);
     });
 }
-function getRecordsIndexFromDbAtInit() {
-    const path = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid + "/recordsIndex";
-    
-    onValue(ref(db, path), (snapshot) => {
-        const flatRec = flattenRecords(snapshot.val());
 
-        appEditor.db.records = true;
-        initSuccess();
 
-        if (flatRec === false) { //false would be null
-            appEditor.recordsIndex = [];
-        }
-        displayRecords();
-        recordsHandlersOn();
-    }, (error) => {
-        chkPermission(error);
-    }, {
-        onlyOnce: true
-    });
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*********************/
 
