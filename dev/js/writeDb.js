@@ -23,24 +23,22 @@ function prepFileContent(obj) {
 }
 
 async function writeToSubDir(subDir) {
-    if (subDir?.fileUidsArr.length) {
+    if (subDir?.fileUidsArr) {
         writeRecordFilesToSubDir(subDir.obj, subDir.path, subDir.fileUidsArr); //subDir.obj is an [] of {}s
     } else {
         writeOneFileToSubDir(subDir.obj, subDir.path, subDir.fileUid);
     }
 }
+
+//TODO: compare this with the Promise.all method (ref: rubricData)
 async function writeRecordFilesToSubDir(subDir) {
+    const arrOfObjs = subDir.fileUidsArr;
 
-//promise.all etc.., call writeOneFileToSubDir(subDir.fileUidsArr[i])
-
-
-
-
-
-
-
-
+    arrOfObjs.forEach( async (obj, i) => {
+        await writeOneFileToSubDir(subDir.obj[i], subDir.path, subDir.fileUidsArr[i]);
+    });
 }
+
 async function writeOneFileToSubDir(obj, path, fileUid) {
     try {
         const content = prepFileContent(obj);

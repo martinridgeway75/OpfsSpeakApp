@@ -73,15 +73,60 @@ function deleteRecordsViaMap(keyArr) {
     buildRecordsMap();
     writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", fileUidsArr: keyArr }}, "delete", hasRemovedRecords);  //expect [Uuid] || []
 }
+function saveUpdatedRecords() {//records for the current temp student are being updated
+    const tempRecordArr = appEditor.appEditRecords.tempStudentRecords;
+    let keyArr = [];
+    let postDataArr = [];
+    let idx;
 
+    if (!tempRecordArr.length) { return; }
+
+    tempRecordArr.forEach( function (obj) {
+        if (!obj?.null_marked_for_deletion) {
+            keyArr.push(obj.recordKey);
+            obj = removeRecordKeyFromObjForDb(obj);
+            postDataArr.push(obj);
+
+            idx = appEditor.recordsIndex.map(function (el) { return el.recordKey; }).indexOf(obj.recordKey);
+            appEditor.recordsIndex[idx] = createIndexObjForDb(obj); //TODO: not sure why this is here
+        }
+    });
+    saveUpdateRecordsInAppEditor();
+    displayMsg("r");
+    buildRecordsMap(); //changes will be reflected onreload here
+    exitUpdateRecords();
+    writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postDataArr, fileUidsArr: keyArr }}, "write", hasSetNewRecords); //expect <String> e || "OK"
+}
+//@
 // function pushRecordsToDb(key) {
 //     // const postData = convertTo...(key);
 //     // const newPostKey = crypto.randomUUID();
 //     // const idxObj = idxObjFrom...(postData);
 
-//     // rubricCommitted(newPostKey, idxObj); //update appEditor.recordsIndex before hitting the db
-//     hitDb({ obj: appEditor.rubricsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
+//     update appEditor.recordsIndex before hitting the db
+//     writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
 // }
+function pushRecordsToDb(dataObj) { //dataObj is but one record
+
+    const recordPath = ctx + "/records/" + newPostKey;
+
+    const updates = {};
+
+    updates[recordIdxPath] = postData;
+    updates[recordPath] = dataObj;
+
+    update(ref(db), updates).then(() => {
+        displayMsg("s");
+
+        if (appEditor.db.records === true) {
+            addNewRecordToRecordsIndex(newPostKey, postData);
+        }
+        resetDataEntry();
+    }).catch((error) => {
+        chkPermission(error);
+        displayMsg("a", error);
+    });
+}
 
 
 /*********callbacks***********/
@@ -131,91 +176,11 @@ function hasRemovedRecords(msg) {
     
     displayMsg("n", msg);
 }
-
-
-
-
-
-//TODO: here
-
-function saveUpdatedRecords() {//records for the current temp student are being updated
-    saveUpdateRecordsInAppEditor();
-    displayMsg("r");
-    buildRecordsMap(); //changes will be reflected onreload here
-    exitUpdateRecords();
-    //@error => { displayMsg("a", error);
-
-
-    if (appEditor.appEditRecords.tempStudentRecords.length) {
-        appEditor.appEditRecords.tempStudentRecords.forEach( function (el) {
-            recordIdxPath = ctx + "/recordsIndex/" + el.recordKey;
-            recordPath = ctx + "/records/" + el.recordKey;
-
-            if (el.hasOwnProperty("null_marked_for_deletion")) { //TODO: call delete
-                if (el.null_marked_for_deletion === true) {
-                    updates[recordIdxPath] = null;
-                    updates[recordPath] = null;
-                }
-            } else {
-                updates[recordIdxPath] = createIndexObjForDb(el);
-                updates[recordPath] = removeRecordKeyFromObjForDb(el);
-            }
-        });
-    }
-
-    //TODO: subDir.obj && subDir.fileUid MUST BE ARRAYS!
-
-    // recordsCommitted(relevantKey, idxObj); //update appEditor.recordsIndex before hitting the db
-    writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUidsArr: relevantKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
-}   //NOTE: do we need fileUidsArr? can we not run Object.keys(postData) ?
-
-
-
-
-
-
-
-
-
-
-function pushRecordsToDb(dataObj) {
-    const ctx = "" + /*appEditor.settings.dbCtx*/ + "/" + auth.currentUser.uid;
-    const postData = { timeStamp: dataObj.timeStamp, context: dataObj.context, studentData: dataObj.studentData };
-    const objPath = ctx + "/recordsIndex/";
-    const newPostKey = push(child(ref(db), objPath)).key;
-    const recordIdxPath = ctx + "/recordsIndex/" + newPostKey;
-    const recordPath = ctx + "/records/" + newPostKey;
-    const updates = {};
-
-    updates[recordIdxPath] = postData;
-    updates[recordPath] = dataObj;
-
-    update(ref(db), updates).then(() => {
-        displayMsg("s");
-
-        if (appEditor.db.records === true) {
-            addNewRecordToRecordsIndex(newPostKey, postData);
-        }
-        resetDataEntry();
-    }).catch((error) => {
-        chkPermission(error);
-        displayMsg("a", error);
-    });
+function hasSetNewRecords(msg) {
+    if (msg === "OK") { return; }
+    
+    displayMsg("a", msg);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
