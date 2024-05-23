@@ -97,35 +97,84 @@ function saveUpdatedRecords() {//records for the current temp student are being 
     exitUpdateRecords();
     writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postDataArr, fileUidsArr: keyArr }}, "write", hasSetNewRecords); //expect <String> e || "OK"
 }
-//@
-// function pushRecordsToDb(key) {
-//     // const postData = convertTo...(key);
-//     // const newPostKey = crypto.randomUUID();
-//     // const idxObj = idxObjFrom...(postData);
 
-//     update appEditor.recordsIndex before hitting the db
-//     writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: postData, fileUid: newPostKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
-// }
-function pushRecordsToDb(dataObj) { //dataObj is but one record
 
-    const recordPath = ctx + "/records/" + newPostKey;
+function pushNewRecordToDb(dataObj) { //dataObj is but one record
 
-    const updates = {};
+// what is this? :  postData; ??
 
-    updates[recordIdxPath] = postData;
-    updates[recordPath] = dataObj;
+    if (!appEditor.db.records) { return; }
 
-    update(ref(db), updates).then(() => {
-        displayMsg("s");
+    const newPostKey = crypto.randomUUID();
 
-        if (appEditor.db.records === true) {
-            addNewRecordToRecordsIndex(newPostKey, postData);
-        }
-        resetDataEntry();
-    }).catch((error) => {
-        chkPermission(error);
-        displayMsg("a", error);
-    });
+    addNewRecordToRecordsIndex(newPostKey, postData);
+    writeToDb({ obj: appEditor.recordsIndex, fileName: "recordsIdx", subDir: { path: "records", obj: dataObj, fileUid: newPostKey }}, "write", hasSetNewRecord); //expect <String> e || "OK"
+
+    //success callback
+    displayMsg("s");
+    resetDataEntry();
+
+    //error callback
+    displayMsg("a", error);
+}
+
+
+
+
+
+function dlNewRecordAndSave() { //on a click handler
+    newRecordSaveThenDl(true);
+}
+function commitNewRecord() { //on a click handler
+    newRecordSaveThenDl(false);
+}
+
+function newRecordSaveThenDl(bool) {
+    const allready = saveTempRecord();
+
+    if (!allready) { return; }
+    if (bool) { dlNewRecord(); }
+
+    const dataObj = createFinalRecord();
+    pushNewRecordToDb(dataObj);    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function addNewRecordToRecordsIndex(newPostKey, postData) {
+    var newObj = {
+        stCls: "" + postData.studentData.stCls,
+        stId: "" + postData.studentData.stId,
+        stNme: "" + postData.studentData.stNme,
+        context: "" + postData.context,
+        recordKey: "" + newPostKey,
+        timeStamp: [postData.timeStamp].slice(0)[0]
+    };
+    appEditor.recordsIndex.push(newObj); //appEditor.recordsIndex is not sorted
+    buildRecordsMap();
 }
 
 
@@ -176,7 +225,7 @@ function hasRemovedRecords(msg) {
     
     displayMsg("n", msg);
 }
-function hasSetNewRecords(msg) {
+function hasSetNewRecord(msg) {
     if (msg === "OK") { return; }
     
     displayMsg("a", msg);
@@ -314,37 +363,6 @@ function getAllChkdForDl(elId) { //called on "download" button
 
 //NEW RECORDS IN GRADER
 
-function addNewRecordToRecordsIndex(newPostKey, postData) {
-    var newObj = {
-        stCls: "" + postData.studentData.stCls,
-        stId: "" + postData.studentData.stId,
-        stNme: "" + postData.studentData.stNme,
-        context: "" + postData.context,
-        recordKey: "" + newPostKey,
-        timeStamp: [postData.timeStamp].slice(0)[0]
-    };
-    appEditor.recordsIndex.push(newObj); //appEditor.recordsIndex is not sorted
-    buildRecordsMap();
-}
-function commitNewRecord() {
-    var allready = saveTempRecord();
-    var dataObj;
-
-    if (allready !== true) { return; }
-
-    dataObj = createFinalRecord();
-    pushRecordsToDb(dataObj);
-}
-function dlNewRecordAndSave() {
-    var allready = saveTempRecord();
-    var dataObj;
-
-    if (allready !== true) { return; }
-
-    dlNewRecord();
-    dataObj = createFinalRecord();
-    pushRecordsToDb(dataObj);
-}
 function saveTempRecord() {
     var allLocked = allSectionsAreLocked();
 
