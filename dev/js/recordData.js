@@ -231,8 +231,6 @@ function hasSetNewRecord(msg) {
     displayMsg("a", msg);
 }
 
-
-
 /*********************/
 
 function buildTempRecords() { //referring to the student loaded into: appEditor.appEditRecords.tempStudent...
